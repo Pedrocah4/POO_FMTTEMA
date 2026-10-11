@@ -1,0 +1,14 @@
+# Credenciais e configurações locais do Spring Boot
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-*.properties
+backend/src/main/resources/application-*.yml
+
+# Variáveis de ambiente do Frontend React
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Pastas de IDE na raiz do monorepo
+.idea/
+.vscode/
+*.iml
