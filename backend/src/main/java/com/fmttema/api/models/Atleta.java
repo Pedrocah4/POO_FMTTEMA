@@ -41,6 +41,9 @@ public class Atleta implements Serializable {
     private Double peso;
 
     @Column(length = 50)
+    private String categoria;
+
+    @Column(length = 50)
     private String graduacao; // Prajied no Muaythai (ex: Branco, Branco Ponta Vermelha, etc.)
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -48,7 +51,7 @@ public class Atleta implements Serializable {
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "academia_id", nullable = false)
+    @JoinColumn(name = "academia_id")
     private Academia academia;
 
     public Atleta() {
@@ -123,6 +126,14 @@ public class Atleta implements Serializable {
 
     public void setPeso(Double peso) {
         this.peso = peso;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
     }
 
     public String getGraduacao() {

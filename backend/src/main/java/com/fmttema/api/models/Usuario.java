@@ -37,6 +37,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false, length = 30)
     private PerfilAcesso perfil;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private StatusUsuario status = StatusUsuario.PENDENTE_APROVACAO;
+
     public Usuario() {
     }
 
@@ -44,6 +48,14 @@ public class Usuario implements UserDetails {
         this.email = email;
         this.senha = senha;
         this.perfil = perfil;
+        this.status = StatusUsuario.PENDENTE_APROVACAO;
+    }
+
+    public Usuario(String email, String senha, PerfilAcesso perfil, StatusUsuario status) {
+        this.email = email;
+        this.senha = senha;
+        this.perfil = perfil;
+        this.status = status != null ? status : StatusUsuario.PENDENTE_APROVACAO;
     }
 
     public Usuario(Long id, String email, String senha, PerfilAcesso perfil) {
@@ -51,6 +63,15 @@ public class Usuario implements UserDetails {
         this.email = email;
         this.senha = senha;
         this.perfil = perfil;
+        this.status = StatusUsuario.PENDENTE_APROVACAO;
+    }
+
+    public Usuario(Long id, String email, String senha, PerfilAcesso perfil, StatusUsuario status) {
+        this.id = id;
+        this.email = email;
+        this.senha = senha;
+        this.perfil = perfil;
+        this.status = status != null ? status : StatusUsuario.PENDENTE_APROVACAO;
     }
 
     public Long getId() {
@@ -83,6 +104,14 @@ public class Usuario implements UserDetails {
 
     public void setPerfil(PerfilAcesso perfil) {
         this.perfil = perfil;
+    }
+
+    public StatusUsuario getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusUsuario status) {
+        this.status = status;
     }
 
     @Override

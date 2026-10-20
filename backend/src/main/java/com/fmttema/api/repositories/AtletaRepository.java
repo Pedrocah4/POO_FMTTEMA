@@ -11,5 +11,6 @@ import java.util.Optional;
 public interface AtletaRepository extends JpaRepository<Atleta, Long> {
     List<Atleta> findByAcademiaId(Long academiaId);
     Optional<Atleta> findByCpf(String cpf);
+    boolean existsByCpf(String cpf);
     Optional<Atleta> findByUsuarioId(Long usuarioId);
 }
