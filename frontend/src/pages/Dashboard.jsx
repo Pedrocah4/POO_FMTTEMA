@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/MainLayout';
 import DashboardCard from '../components/DashboardCard';
+import TabelaPendencias from '../components/TabelaPendencias';
 import { 
   Users, 
   Trophy, 
@@ -44,6 +45,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Fila de Pendências de Credenciamento (US03) */}
+        {user?.perfil === 'ADMIN' && <TabelaPendencias />}
 
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">

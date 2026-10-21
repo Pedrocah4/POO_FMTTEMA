@@ -8,14 +8,29 @@ public record UsuarioResponseDTO(
         Long id,
         String email,
         PerfilAcesso perfil,
-        StatusUsuario status
+        StatusUsuario status,
+        String nome,
+        String documento
 ) {
     public static UsuarioResponseDTO fromEntity(Usuario usuario) {
         return new UsuarioResponseDTO(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getPerfil(),
-                usuario.getStatus()
+                usuario.getStatus(),
+                null,
+                null
+        );
+    }
+
+    public static UsuarioResponseDTO fromEntity(Usuario usuario, String nome, String documento) {
+        return new UsuarioResponseDTO(
+                usuario.getId(),
+                usuario.getEmail(),
+                usuario.getPerfil(),
+                usuario.getStatus(),
+                nome,
+                documento
         );
     }
 }
