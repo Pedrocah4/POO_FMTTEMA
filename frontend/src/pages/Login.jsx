@@ -47,8 +47,10 @@ export default function Login() {
   };
 
   const handlePreencherAdmin = () => {
-    setEmail('admin@fmttema.com');
-    setSenha('admin123');
+    const testEmail = import.meta.env.VITE_TEST_ADMIN_EMAIL || 'admin@fmttema.com';
+    const testPassword = import.meta.env.VITE_TEST_ADMIN_PASSWORD || 'admin123';
+    setEmail(testEmail);
+    setSenha(testPassword);
     setErrorMessage('');
   };
 

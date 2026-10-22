@@ -1,14 +1,18 @@
 spring.application.name=backend
 
-# Configuração da Base de Dados (Altere conforme seu ambiente local)
-spring.datasource.url=jdbc:postgresql://localhost:5432/fmttema_db
-spring.datasource.username=postgres
-spring.datasource.password=sua_senha_aqui
+# Configuração da Base de Dados via Variáveis de Ambiente
+spring.datasource.url=${DB_URL:jdbc:postgresql://localhost:5432/fmttema_db}
+spring.datasource.username=${DB_USERNAME:postgres}
+spring.datasource.password=${DB_PASSWORD:sua_senha_aqui}
 
 # Configuração do Hibernate/JPA
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=${JPA_HIBERNATE_DDL_AUTO:update}
+spring.jpa.show-sql=${JPA_SHOW_SQL:false}
 spring.jpa.open-in-view=false
 
-# Configuração de Segurança / JWT
-api.security.token.secret=sua_chave_secreta_jwt_para_desenvolvimento
+# Configuração de Segurança / JWT (substituir em produção)
+api.security.token.secret=${JWT_SECRET:sua_chave_secreta_jwt_para_desenvolvimento}
+
+# Administrador Padrão (inicializado se banco estiver vazio)
+admin.default.email=${ADMIN_EMAIL:admin@fmttema.com}
+admin.default.password=${ADMIN_PASSWORD:admin123}

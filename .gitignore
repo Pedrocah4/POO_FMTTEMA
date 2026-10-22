@@ -1,14 +1,23 @@
+# Arquivos de variáveis de ambiente e segredos (em qualquer diretório)
+**/.env
+**/.env.*
+*.env
+!.env.example
+!**/.env.example
+
 # Credenciais e configurações locais do Spring Boot
 backend/src/main/resources/application.properties
 backend/src/main/resources/application-*.properties
 backend/src/main/resources/application-*.yml
 
-# Variáveis de ambiente do Frontend React
-frontend/.env
-frontend/.env.local
-frontend/.env.*.local
+# Chaves privadas, certificados e segredos
+*.pem
+*.key
+*.p12
+*.jks
+*.crt
 
-# Pastas de IDE na raiz do monorepo
+# Pastas de IDE e editores
 .idea/
 .vscode/
 *.iml

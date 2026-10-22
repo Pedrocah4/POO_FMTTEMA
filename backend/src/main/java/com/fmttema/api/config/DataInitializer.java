@@ -3,6 +3,7 @@ package com.fmttema.api.config;
 import com.fmttema.api.models.PerfilAcesso;
 import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,12 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${admin.default.email:admin@fmttema.com}")
+    private String adminEmail;
+
+    @Value("${admin.default.password:admin123}")
+    private String adminPassword;
+
     public DataInitializer(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -22,12 +29,12 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         if (usuarioRepository.count() == 0) {
             Usuario admin = new Usuario(
-                    "admin@fmttema.com",
-                    passwordEncoder.encode("admin123"),
+                    adminEmail,
+                    passwordEncoder.encode(adminPassword),
                     PerfilAcesso.ADMIN
             );
             usuarioRepository.save(admin);
-            System.out.println(">>> [FMTTEMA] Usuário inicial criado: admin@fmttema.com / admin123");
+            System.out.println(">>> [FMTTEMA] Usuário administrador padrão inicializado com sucesso: " + adminEmail);
         }
     }
 }
