@@ -4,5 +4,6 @@ public enum PerfilAcesso {
     ADMIN,
     ATLETA,
     ACADEMIA,
-    ARBITRO
+    ARBITRO,
+    TREINADOR
 }

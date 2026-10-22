@@ -46,6 +46,18 @@ public class Atleta implements Serializable {
     @Column(length = 50)
     private String graduacao; // Prajied no Muaythai (ex: Branco, Branco Ponta Vermelha, etc.)
 
+    @Column(length = 50)
+    private String kruang;
+
+    @Column(name = "vitorias")
+    private Integer vitorias = 0;
+
+    @Column(name = "derrotas")
+    private Integer derrotas = 0;
+
+    @Column(name = "empates")
+    private Integer empates = 0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
@@ -137,11 +149,47 @@ public class Atleta implements Serializable {
     }
 
     public String getGraduacao() {
-        return graduacao;
+        return graduacao != null ? graduacao : kruang;
     }
 
     public void setGraduacao(String graduacao) {
         this.graduacao = graduacao;
+        if (this.kruang == null) {
+            this.kruang = graduacao;
+        }
+    }
+
+    public String getKruang() {
+        return kruang != null ? kruang : graduacao;
+    }
+
+    public void setKruang(String kruang) {
+        this.kruang = kruang;
+        this.graduacao = kruang;
+    }
+
+    public Integer getVitorias() {
+        return vitorias != null ? vitorias : 0;
+    }
+
+    public void setVitorias(Integer vitorias) {
+        this.vitorias = vitorias;
+    }
+
+    public Integer getDerrotas() {
+        return derrotas != null ? derrotas : 0;
+    }
+
+    public void setDerrotas(Integer derrotas) {
+        this.derrotas = derrotas;
+    }
+
+    public Integer getEmpates() {
+        return empates != null ? empates : 0;
+    }
+
+    public void setEmpates(Integer empates) {
+        this.empates = empates;
     }
 
     public Usuario getUsuario() {

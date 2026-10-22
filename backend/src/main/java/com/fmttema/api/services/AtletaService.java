@@ -1,0 +1,48 @@
+package com.fmttema.api.services;
+
+import com.fmttema.api.dto.AtletaResponseDTO;
+import com.fmttema.api.dto.AtualizarCartelDTO;
+import com.fmttema.api.models.Atleta;
+import com.fmttema.api.repositories.AtletaRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class AtletaService {
+
+    private final AtletaRepository atletaRepository;
+
+    public AtletaService(AtletaRepository atletaRepository) {
+        this.atletaRepository = atletaRepository;
+    }
+
+    /**
+     * Atualiza o cartel e a graduação (Kruang) do atleta com garantia de transação ACID.
+     * O mapeamento do DTO ocorre dentro da transação para evitar LazyInitializationException.
+     */
+    @Transactional
+    public AtletaResponseDTO atualizarCartel(Long id, AtualizarCartelDTO dto) {
+        Atleta atleta = atletaRepository.findById(id)
+                .or(() -> atletaRepository.findByUsuarioId(id))
+                .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID ou Usuário ID: " + id));
+
+        if (dto.vitorias() != null) {
+            atleta.setVitorias(dto.vitorias());
+        }
+        if (dto.derrotas() != null) {
+            atleta.setDerrotas(dto.derrotas());
+        }
+        if (dto.empates() != null) {
+            atleta.setEmpates(dto.empates());
+        }
+        if (dto.kruang() != null && !dto.kruang().isBlank()) {
+            atleta.setKruang(dto.kruang());
+        } else if (dto.graduacao() != null && !dto.graduacao().isBlank()) {
+            atleta.setGraduacao(dto.graduacao());
+        }
+
+        Atleta atletaSalvo = atletaRepository.save(atleta);
+        return AtletaResponseDTO.fromEntity(atletaSalvo);
+    }
+}

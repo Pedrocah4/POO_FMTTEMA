@@ -2,6 +2,7 @@ package com.fmttema.api.controllers;
 
 import com.fmttema.api.dto.AtletaRequestDTO;
 import com.fmttema.api.dto.AtletaResponseDTO;
+import com.fmttema.api.dto.AtualizarCartelDTO;
 import com.fmttema.api.models.Academia;
 import com.fmttema.api.models.Atleta;
 import com.fmttema.api.models.PerfilAcesso;
@@ -10,10 +11,15 @@ import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.AcademiaRepository;
 import com.fmttema.api.repositories.AtletaRepository;
 import com.fmttema.api.repositories.UsuarioRepository;
+import com.fmttema.api.services.AtletaService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,17 +36,20 @@ public class AtletaController {
     private final AcademiaRepository academiaRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AtletaService atletaService;
 
     public AtletaController(
             AtletaRepository atletaRepository,
             AcademiaRepository academiaRepository,
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AtletaService atletaService
     ) {
         this.atletaRepository = atletaRepository;
         this.academiaRepository = academiaRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.atletaService = atletaService;
     }
 
     @PostMapping
@@ -90,11 +99,29 @@ public class AtletaController {
         atleta.setPeso(dto.peso());
         atleta.setCategoria(dto.categoria());
         atleta.setGraduacao(dto.graduacao());
+        atleta.setKruang(dto.graduacao());
         atleta.setUsuario(usuarioSalvo);
         atleta.setAcademia(academia);
 
         Atleta atletaSalvo = atletaRepository.save(atleta);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(AtletaResponseDTO.fromEntity(atletaSalvo));
+    }
+
+    @PatchMapping("/{id}/cartel")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TREINADOR')")
+    public ResponseEntity<?> atualizarCartel(
+            @PathVariable Long id,
+            @RequestBody @Valid AtualizarCartelDTO dto
+    ) {
+        try {
+            AtletaResponseDTO resposta = atletaService.atualizarCartel(id, dto);
+            return ResponseEntity.ok(resposta);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
     }
 }
