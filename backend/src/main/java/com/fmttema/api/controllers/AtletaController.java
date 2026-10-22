@@ -17,7 +17,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -117,6 +120,43 @@ public class AtletaController {
         try {
             AtletaResponseDTO resposta = atletaService.atualizarCartel(id, dto);
             return ResponseEntity.ok(resposta);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<AtletaResponseDTO>> listarTodos() {
+        return ResponseEntity.ok(atletaService.listarTodos());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> obterMeuPerfil(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                    "erro", "Não autorizado",
+                    "mensagem", "Usuário não autenticado"
+            ));
+        }
+        try {
+            AtletaResponseDTO atleta = atletaService.buscarPorEmailUsuario(authentication.getName());
+            return ResponseEntity.ok(atleta);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", "Perfil de atleta não encontrado para o usuário logado"
+            ));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obterPorId(@PathVariable Long id) {
+        try {
+            AtletaResponseDTO atleta = atletaService.buscarPorId(id);
+            return ResponseEntity.ok(atleta);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "erro", "Não encontrado",

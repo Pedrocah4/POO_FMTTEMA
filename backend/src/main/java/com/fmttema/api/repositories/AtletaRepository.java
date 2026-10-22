@@ -13,4 +13,5 @@ public interface AtletaRepository extends JpaRepository<Atleta, Long> {
     Optional<Atleta> findByCpf(String cpf);
     boolean existsByCpf(String cpf);
     Optional<Atleta> findByUsuarioId(Long usuarioId);
+    Optional<Atleta> findByUsuarioEmail(String email);
 }

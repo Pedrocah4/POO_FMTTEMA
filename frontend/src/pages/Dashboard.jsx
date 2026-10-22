@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/MainLayout';
 import DashboardCard from '../components/DashboardCard';
 import TabelaPendencias from '../components/TabelaPendencias';
+import PerfilCartelAtleta from '../components/PerfilCartelAtleta';
 import { 
   Users, 
   Trophy, 
@@ -16,6 +17,12 @@ import {
 export default function Dashboard() {
   const { user, token } = useAuth();
 
+  const getTituloPainel = () => {
+    if (user?.perfil === 'ATLETA') return 'Painel do Atleta FMTTEMA';
+    if (user?.perfil === 'TREINADOR') return 'Painel do Treinador FMTTEMA';
+    return 'Painel Administrativo FMTTEMA';
+  };
+
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
@@ -29,7 +36,7 @@ export default function Dashboard() {
                 <span>Sessão Oficial Ativa</span>
               </div>
               <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-fmt-blue tracking-tight">
-                Painel Administrativo FMTTEMA
+                {getTituloPainel()}
               </h1>
               <p className="text-sm text-slate-600 mt-2 max-w-2xl leading-relaxed">
                 Bem-vindo ao portal unificado da Federação de Muaythai Tradicional do Maranhão. Gerencie atletas, homologue inscrições em torneios e acompanhe os processos esportivos estaduais.
@@ -45,6 +52,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Perfil e Cartel do Atleta / Gestão do Treinador (US04) */}
+        <PerfilCartelAtleta />
 
         {/* Fila de Pendências de Credenciamento (US03) */}
         {user?.perfil === 'ADMIN' && <TabelaPendencias />}

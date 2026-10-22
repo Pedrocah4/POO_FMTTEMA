@@ -8,6 +8,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class AtletaService {
 
@@ -44,5 +46,27 @@ public class AtletaService {
 
         Atleta atletaSalvo = atletaRepository.save(atleta);
         return AtletaResponseDTO.fromEntity(atletaSalvo);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AtletaResponseDTO> listarTodos() {
+        return atletaRepository.findAll().stream()
+                .map(AtletaResponseDTO::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AtletaResponseDTO buscarPorId(Long id) {
+        Atleta atleta = atletaRepository.findById(id)
+                .or(() -> atletaRepository.findByUsuarioId(id))
+                .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID: " + id));
+        return AtletaResponseDTO.fromEntity(atleta);
+    }
+
+    @Transactional(readOnly = true)
+    public AtletaResponseDTO buscarPorEmailUsuario(String email) {
+        Atleta atleta = atletaRepository.findByUsuarioEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado para o e-mail: " + email));
+        return AtletaResponseDTO.fromEntity(atleta);
     }
 }
