@@ -2,6 +2,8 @@ package com.fmttema.api.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,6 +59,10 @@ public class Atleta implements Serializable {
 
     @Column(name = "empates")
     private Integer empates = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_pagamento", length = 30)
+    private StatusPagamento statusPagamento = StatusPagamento.PENDENTE;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", unique = true)
@@ -206,6 +212,14 @@ public class Atleta implements Serializable {
 
     public void setAcademia(Academia academia) {
         this.academia = academia;
+    }
+
+    public StatusPagamento getStatusPagamento() {
+        return statusPagamento;
+    }
+
+    public void setStatusPagamento(StatusPagamento statusPagamento) {
+        this.statusPagamento = statusPagamento;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.fmttema.api.dto.AtualizarCartelDTO;
 import com.fmttema.api.models.Academia;
 import com.fmttema.api.models.Atleta;
 import com.fmttema.api.models.PerfilAcesso;
+import com.fmttema.api.models.StatusPagamento;
 import com.fmttema.api.models.StatusUsuario;
 import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.AcademiaRepository;
@@ -157,6 +158,36 @@ public class AtletaController {
         try {
             AtletaResponseDTO atleta = atletaService.buscarPorId(id);
             return ResponseEntity.ok(atleta);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    @PatchMapping("/{id}/pagamento")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> atualizarStatusPagamento(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        try {
+            String statusStr = body.getOrDefault("statusPagamento", body.get("status"));
+            if (statusStr == null || statusStr.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                        "erro", "Valor obrigatório",
+                        "mensagem", "O campo 'statusPagamento' é obrigatório (PAGO ou PENDENTE)"
+                ));
+            }
+            StatusPagamento status = StatusPagamento.valueOf(statusStr.trim().toUpperCase());
+            AtletaResponseDTO resposta = atletaService.atualizarStatusPagamento(id, status);
+            return ResponseEntity.ok(resposta);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "erro", "Valor inválido",
+                    "mensagem", "Status de pagamento inválido. Valores aceitos: PAGO, PENDENTE"
+            ));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "erro", "Não encontrado",

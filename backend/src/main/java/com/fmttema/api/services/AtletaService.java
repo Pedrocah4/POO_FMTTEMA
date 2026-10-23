@@ -3,6 +3,7 @@ package com.fmttema.api.services;
 import com.fmttema.api.dto.AtletaResponseDTO;
 import com.fmttema.api.dto.AtualizarCartelDTO;
 import com.fmttema.api.models.Atleta;
+import com.fmttema.api.models.StatusPagamento;
 import com.fmttema.api.repositories.AtletaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -68,5 +69,15 @@ public class AtletaService {
         Atleta atleta = atletaRepository.findByUsuarioEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado para o e-mail: " + email));
         return AtletaResponseDTO.fromEntity(atleta);
+    }
+
+    @Transactional
+    public AtletaResponseDTO atualizarStatusPagamento(Long id, StatusPagamento status) {
+        Atleta atleta = atletaRepository.findById(id)
+                .or(() -> atletaRepository.findByUsuarioId(id))
+                .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID: " + id));
+        atleta.setStatusPagamento(status);
+        Atleta salvo = atletaRepository.save(atleta);
+        return AtletaResponseDTO.fromEntity(salvo);
     }
 }

@@ -1,6 +1,7 @@
 package com.fmttema.api.dto;
 
 import com.fmttema.api.models.Atleta;
+import com.fmttema.api.models.StatusPagamento;
 import com.fmttema.api.models.StatusUsuario;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ public record AtletaResponseDTO(
         Integer empates,
         String email,
         StatusUsuario status,
+        StatusPagamento statusPagamento,
         Long academiaId,
         String academiaNome
 ) {
@@ -39,6 +41,7 @@ public record AtletaResponseDTO(
                 atleta.getEmpates(),
                 atleta.getUsuario() != null ? atleta.getUsuario().getEmail() : null,
                 atleta.getUsuario() != null ? atleta.getUsuario().getStatus() : null,
+                atleta.getStatusPagamento() != null ? atleta.getStatusPagamento() : StatusPagamento.PENDENTE,
                 atleta.getAcademia() != null ? atleta.getAcademia().getId() : null,
                 atleta.getAcademia() != null ? atleta.getAcademia().getNome() : null
         );
