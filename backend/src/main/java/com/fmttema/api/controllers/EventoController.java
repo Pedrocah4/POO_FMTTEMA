@@ -1,11 +1,13 @@
 package com.fmttema.api.controllers;
 
+import com.fmttema.api.dto.ChaveamentoResponseDTO;
 import com.fmttema.api.dto.EventoRequestDTO;
 import com.fmttema.api.dto.EventoResponseDTO;
 import com.fmttema.api.dto.InscricaoRequestDTO;
 import com.fmttema.api.dto.InscricaoResponseDTO;
 import com.fmttema.api.exceptions.PagamentoPendenteException;
 import com.fmttema.api.services.EventoService;
+import com.fmttema.api.services.GeradorChavesService;
 import com.fmttema.api.services.InscricaoService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -29,10 +31,16 @@ public class EventoController {
 
     private final EventoService eventoService;
     private final InscricaoService inscricaoService;
+    private final GeradorChavesService geradorChavesService;
 
-    public EventoController(EventoService eventoService, InscricaoService inscricaoService) {
+    public EventoController(
+            EventoService eventoService,
+            InscricaoService inscricaoService,
+            GeradorChavesService geradorChavesService
+    ) {
         this.eventoService = eventoService;
         this.inscricaoService = inscricaoService;
+        this.geradorChavesService = geradorChavesService;
     }
 
     @PostMapping
@@ -107,6 +115,39 @@ public class EventoController {
         try {
             List<InscricaoResponseDTO> inscricoes = inscricaoService.listarInscricoesPorEvento(id);
             return ResponseEntity.ok(inscricoes);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Gera o chaveamento oficial do evento com cruzamento de ranking e regra do Bye (US07).
+     */
+    @PostMapping({"/{id}/chaves", "/{id}/gerar-chaves"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'TREINADOR')")
+    public ResponseEntity<?> gerarChaves(@PathVariable Long id) {
+        try {
+            ChaveamentoResponseDTO chaveamento = geradorChavesService.gerarChavesPorEvento(id);
+            return ResponseEntity.ok(chaveamento);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Consulta as chaves geradas e emparelhamento de lutas do evento.
+     */
+    @GetMapping("/{id}/chaves")
+    public ResponseEntity<?> consultarChaves(@PathVariable Long id) {
+        try {
+            ChaveamentoResponseDTO chaveamento = geradorChavesService.gerarChavesPorEvento(id);
+            return ResponseEntity.ok(chaveamento);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "erro", "Não encontrado",
