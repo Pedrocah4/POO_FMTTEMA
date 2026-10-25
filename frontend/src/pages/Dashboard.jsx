@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import MainLayout from '../components/MainLayout';
 import DashboardCard from '../components/DashboardCard';
@@ -16,6 +17,7 @@ import {
 
 export default function Dashboard() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
 
   const getTituloPainel = () => {
     if (user?.perfil === 'ATLETA') return 'Painel do Atleta FMTTEMA';
@@ -84,6 +86,7 @@ export default function Dashboard() {
               icon={Trophy}
               badge="Torneios"
               actionText="Ver chaveamentos"
+              onAction={() => navigate('/chaves')}
               stat={{ value: "08", label: "categorias ativas" }}
             />
 

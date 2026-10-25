@@ -81,7 +81,7 @@ export default function PerfilCartelAtleta() {
         const atletas = res.data || [];
         setListaAtletas(atletas);
         if (atletas.length > 0) {
-          // Define o primeiro da lista como atleta em destaque (ex: Rodrigo Minotauro)
+          // Define o primeiro da lista como atleta em destaque (ex: Fellype Dylon)
           setAtleta(atletas[0]);
         }
       }

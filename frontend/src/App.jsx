@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ChavesTorneio from './pages/ChavesTorneio';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           {/* Rotas protegidas pela Guarda de Rotas (PrivateRoute) */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/chaves" element={<ChavesTorneio />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
 

@@ -1,17 +1,47 @@
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from './FmttemaLogo';
-import { LogOut, User, Shield } from 'lucide-react';
+import { LogOut, User, Shield, Trophy, LayoutDashboard } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="bg-fmt-blue text-white shadow-md border-b-4 border-fmt-red sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
-        {/* Identidade Visual / Escudo */}
-        <div className="flex items-center gap-4">
-          <FmttemaLogo size="md" light={true} />
+        {/* Identidade Visual / Escudo + Links */}
+        <div className="flex items-center gap-6">
+          <Link to="/dashboard" className="cursor-pointer">
+            <FmttemaLogo size="md" light={true} />
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-1.5">
+            <Link
+              to="/dashboard"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
+                location.pathname === '/dashboard' || location.pathname === '/'
+                  ? 'bg-white/15 text-white shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Painel</span>
+            </Link>
+
+            <Link
+              to="/chaves"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
+                location.pathname === '/chaves'
+                  ? 'bg-white/15 text-white shadow-sm border border-yellow-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-yellow-400" />
+              <span>Chaves de Luta</span>
+            </Link>
+          </nav>
         </div>
 
         {/* Área do Usuário Autenticado & Ações */}
