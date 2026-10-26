@@ -4,6 +4,8 @@ import MainLayout from '../components/MainLayout';
 import DashboardCard from '../components/DashboardCard';
 import TabelaPendencias from '../components/TabelaPendencias';
 import PerfilCartelAtleta from '../components/PerfilCartelAtleta';
+import PainelEscalaArbitro from '../components/PainelEscalaArbitro';
+import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
 import { 
   Users, 
   Trophy, 
@@ -22,6 +24,7 @@ export default function Dashboard() {
   const getTituloPainel = () => {
     if (user?.perfil === 'ATLETA') return 'Painel do Atleta FMTTEMA';
     if (user?.perfil === 'TREINADOR') return 'Painel do Treinador FMTTEMA';
+    if (user?.perfil === 'ARBITRO') return 'Painel do Árbitro Oficial FMTTEMA';
     return 'Painel Administrativo FMTTEMA';
   };
 
@@ -55,11 +58,17 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Painel do Árbitro: Convocações e Confirmação de Presença (US08) */}
+        {(user?.perfil === 'ARBITRO' || user?.perfil === 'ADMIN') && <PainelEscalaArbitro />}
+
         {/* Perfil e Cartel do Atleta / Gestão do Treinador (US04) */}
         <PerfilCartelAtleta />
 
         {/* Fila de Pendências de Credenciamento (US03) */}
         {user?.perfil === 'ADMIN' && <TabelaPendencias />}
+
+        {/* Gestão e Acompanhamento de Escalas de Árbitros (US08 - Visão Admin) */}
+        {user?.perfil === 'ADMIN' && <GestaoEscalasArbitros />}
 
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">

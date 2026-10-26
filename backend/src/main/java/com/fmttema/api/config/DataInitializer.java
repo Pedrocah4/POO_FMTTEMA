@@ -17,6 +17,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import com.fmttema.api.models.EscalaArbitro;
+import com.fmttema.api.models.Evento;
+import com.fmttema.api.models.StatusPresencaArbitro;
+import com.fmttema.api.repositories.EscalaArbitroRepository;
+import com.fmttema.api.repositories.EventoRepository;
+
 import java.util.List;
 
 @Configuration
@@ -27,6 +33,8 @@ public class DataInitializer implements CommandLineRunner {
     private final CategoriaPesoRepository categoriaPesoRepository;
     private final AtletaRepository atletaRepository;
     private final AcademiaRepository academiaRepository;
+    private final EventoRepository eventoRepository;
+    private final EscalaArbitroRepository escalaArbitroRepository;
 
     @Value("${admin.default.email:admin@fmttema.com}")
     private String adminEmail;
@@ -39,13 +47,17 @@ public class DataInitializer implements CommandLineRunner {
             PasswordEncoder passwordEncoder,
             CategoriaPesoRepository categoriaPesoRepository,
             AtletaRepository atletaRepository,
-            AcademiaRepository academiaRepository
+            AcademiaRepository academiaRepository,
+            EventoRepository eventoRepository,
+            EscalaArbitroRepository escalaArbitroRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.categoriaPesoRepository = categoriaPesoRepository;
         this.atletaRepository = atletaRepository;
         this.academiaRepository = academiaRepository;
+        this.eventoRepository = eventoRepository;
+        this.escalaArbitroRepository = escalaArbitroRepository;
     }
 
     @Override
@@ -162,6 +174,34 @@ public class DataInitializer implements CommandLineRunner {
             );
 
             System.out.println(">>> [FMTTEMA] 10 atletas adicionais povoados no banco de dados com sucesso!");
+        }
+
+        // 5. Inicializa um Árbitro oficial padrão e escala pendente se não existir
+        String arbitroEmail = "arbitro@fmttema.com";
+        Usuario arbitro = usuarioRepository.findByEmail(arbitroEmail).orElseGet(() -> {
+            Usuario novoArbitro = new Usuario(
+                    arbitroEmail,
+                    passwordEncoder.encode("123456"),
+                    PerfilAcesso.ARBITRO,
+                    StatusUsuario.ATIVO
+            );
+            Usuario salvo = usuarioRepository.save(novoArbitro);
+            System.out.println(">>> [FMTTEMA] Usuário árbitro padrão inicializado com sucesso: " + arbitroEmail);
+            return salvo;
+        });
+
+        // Escala o árbitro para o evento oficial se houver evento e ainda não estiver escalado
+        Evento primeiroEvento = eventoRepository.findAll().stream().findFirst().orElse(null);
+        if (primeiroEvento != null && !escalaArbitroRepository.existsByArbitroIdAndEventoId(arbitro.getId(), primeiroEvento.getId())) {
+            EscalaArbitro escalaInicial = new EscalaArbitro(
+                    arbitro,
+                    primeiroEvento,
+                    "Árbitro Central",
+                    StatusPresencaArbitro.PENDENTE
+            );
+            escalaInicial.setObservacoes("Convocação oficial para o torneio de abertura da temporada.");
+            escalaArbitroRepository.save(escalaInicial);
+            System.out.println(">>> [FMTTEMA] Escala inicial do árbitro criada com sucesso (Status: PENDENTE).");
         }
     }
 
