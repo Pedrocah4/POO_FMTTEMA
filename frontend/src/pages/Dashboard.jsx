@@ -6,13 +6,13 @@ import TabelaPendencias from '../components/TabelaPendencias';
 import PerfilCartelAtleta from '../components/PerfilCartelAtleta';
 import PainelEscalaArbitro from '../components/PainelEscalaArbitro';
 import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
-import { 
-  Users, 
-  Trophy, 
-  Calendar, 
-  Coins, 
-  KeyRound, 
-  ShieldCheck, 
+import {
+  Users,
+  Trophy,
+  Calendar,
+  Coins,
+  KeyRound,
+  ShieldCheck,
   FileText,
   Activity
 } from 'lucide-react';
@@ -31,7 +31,7 @@ export default function Dashboard() {
   return (
     <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        
+
         {/* Banner de Boas-Vindas Institucional */}
         <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 sm:p-8 mb-8 text-left">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
