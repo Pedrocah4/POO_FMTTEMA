@@ -6,6 +6,7 @@ import TabelaPendencias from '../components/TabelaPendencias';
 import PerfilCartelAtleta from '../components/PerfilCartelAtleta';
 import PainelEscalaArbitro from '../components/PainelEscalaArbitro';
 import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
+import PainelFinanceiroAnuidades from '../components/PainelFinanceiroAnuidades';
 import {
   Users,
   Trophy,
@@ -61,14 +62,17 @@ export default function Dashboard() {
         {/* Painel do Árbitro: Convocações e Confirmação de Presença (US08) */}
         {(user?.perfil === 'ARBITRO' || user?.perfil === 'ADMIN') && <PainelEscalaArbitro />}
 
-        {/* Perfil e Cartel do Atleta / Gestão do Treinador (US04) */}
-        <PerfilCartelAtleta />
+        {/* Perfil e Cartel do Atleta / Gestão do Treinador (US04 - Não exibido para Árbitro) */}
+        {user?.perfil !== 'ARBITRO' && <PerfilCartelAtleta />}
 
         {/* Fila de Pendências de Credenciamento (US03) */}
         {user?.perfil === 'ADMIN' && <TabelaPendencias />}
 
         {/* Gestão e Acompanhamento de Escalas de Árbitros (US08 - Visão Admin) */}
         {user?.perfil === 'ADMIN' && <GestaoEscalasArbitros />}
+
+        {/* Painel Financeiro de Aprovação e Baixa de Pagamentos (US09) */}
+        {user?.perfil === 'ADMIN' && <PainelFinanceiroAnuidades />}
 
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">
@@ -114,6 +118,7 @@ export default function Dashboard() {
               icon={Coins}
               badge="Tesouraria"
               actionText="Ver financeiro"
+              onAction={() => document.getElementById('painel-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
               stat={{ value: "98%", label: "adimplência" }}
             />
           </div>
