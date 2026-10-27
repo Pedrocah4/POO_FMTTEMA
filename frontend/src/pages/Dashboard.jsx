@@ -7,6 +7,7 @@ import PerfilCartelAtleta from '../components/PerfilCartelAtleta';
 import PainelEscalaArbitro from '../components/PainelEscalaArbitro';
 import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
 import PainelFinanceiroAnuidades from '../components/PainelFinanceiroAnuidades';
+import PainelDashboardAnalitico from '../components/PainelDashboardAnalitico';
 import {
   Users,
   Trophy,
@@ -58,6 +59,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Painel Analítico: Cards Superiores e Gráficos Consolidados (US10) */}
+        {(user?.perfil === 'ADMIN' || user?.perfil === 'TREINADOR') && <PainelDashboardAnalitico />}
 
         {/* Painel do Árbitro: Convocações e Confirmação de Presença (US08) */}
         {(user?.perfil === 'ARBITRO' || user?.perfil === 'ADMIN') && <PainelEscalaArbitro />}
