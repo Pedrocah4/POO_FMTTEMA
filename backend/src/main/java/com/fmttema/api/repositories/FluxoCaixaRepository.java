@@ -21,4 +21,10 @@ public interface FluxoCaixaRepository extends JpaRepository<FluxoCaixa, Long> {
 
     @Query("SELECT COALESCE(SUM(f.valor), 0.0) FROM FluxoCaixa f WHERE f.tipo = 'SAIDA'")
     Double somarTotalSaidas();
+
+    @Query("SELECT COALESCE(SUM(f.valor), 0.0) FROM FluxoCaixa f WHERE f.tipo = 'ENTRADA' AND f.atleta IS NOT NULL")
+    Double somarEntradasAtletas();
+
+    @Query("SELECT COALESCE(SUM(f.valor), 0.0) FROM FluxoCaixa f WHERE f.tipo = 'ENTRADA' AND f.academia IS NOT NULL")
+    Double somarEntradasAcademias();
 }

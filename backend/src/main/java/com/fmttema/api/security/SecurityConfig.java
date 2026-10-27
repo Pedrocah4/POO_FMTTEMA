@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/arbitros/me/**").hasAnyRole("ARBITRO", "ADMIN")
                         .requestMatchers("/api/arbitros/**").hasAnyRole("ADMIN", "ARBITRO")
                         .requestMatchers("/api/financeiro/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "TREINADOR")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

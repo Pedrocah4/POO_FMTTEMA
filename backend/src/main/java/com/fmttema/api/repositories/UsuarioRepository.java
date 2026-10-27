@@ -16,4 +16,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByEmail(String email);
 
     List<Usuario> findByStatus(StatusUsuario status);
+
+    Long countByPerfil(com.fmttema.api.models.PerfilAcesso perfil);
+
+    Long countByStatus(StatusUsuario status);
+
+    Long countByPerfilAndStatus(com.fmttema.api.models.PerfilAcesso perfil, StatusUsuario status);
 }
