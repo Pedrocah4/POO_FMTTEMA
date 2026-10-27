@@ -64,6 +64,9 @@ public class Atleta implements Serializable {
     @Column(name = "status_pagamento", length = 30)
     private StatusPagamento statusPagamento = StatusPagamento.PENDENTE;
 
+    @Column(name = "comprovante_pagamento", length = 500)
+    private String comprovantePagamento;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
@@ -220,6 +223,14 @@ public class Atleta implements Serializable {
 
     public void setStatusPagamento(StatusPagamento statusPagamento) {
         this.statusPagamento = statusPagamento;
+    }
+
+    public String getComprovantePagamento() {
+        return comprovantePagamento;
+    }
+
+    public void setComprovantePagamento(String comprovantePagamento) {
+        this.comprovantePagamento = comprovantePagamento;
     }
 
     @Override

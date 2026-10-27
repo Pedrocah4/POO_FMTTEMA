@@ -3,6 +3,8 @@ package com.fmttema.api.models;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -38,6 +40,13 @@ public class Academia implements Serializable {
 
     @Column(length = 100)
     private String cidade;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_pagamento", length = 30)
+    private StatusPagamento statusPagamento = StatusPagamento.PENDENTE;
+
+    @Column(name = "comprovante_pagamento", length = 500)
+    private String comprovantePagamento;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", unique = true)
@@ -134,6 +143,22 @@ public class Academia implements Serializable {
             this.atletas.remove(atleta);
             atleta.setAcademia(null);
         }
+    }
+
+    public StatusPagamento getStatusPagamento() {
+        return statusPagamento;
+    }
+
+    public void setStatusPagamento(StatusPagamento statusPagamento) {
+        this.statusPagamento = statusPagamento;
+    }
+
+    public String getComprovantePagamento() {
+        return comprovantePagamento;
+    }
+
+    public void setComprovantePagamento(String comprovantePagamento) {
+        this.comprovantePagamento = comprovantePagamento;
     }
 
     @Override
