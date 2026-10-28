@@ -14,6 +14,7 @@ import com.fmttema.api.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -38,6 +39,7 @@ public class DataInitializer implements CommandLineRunner {
     private final EventoRepository eventoRepository;
     private final EscalaArbitroRepository escalaArbitroRepository;
     private final PatrocinadorRepository patrocinadorRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Value("${admin.default.email:admin@fmttema.com}")
     private String adminEmail;
@@ -53,7 +55,8 @@ public class DataInitializer implements CommandLineRunner {
             AcademiaRepository academiaRepository,
             EventoRepository eventoRepository,
             EscalaArbitroRepository escalaArbitroRepository,
-            PatrocinadorRepository patrocinadorRepository
+            PatrocinadorRepository patrocinadorRepository,
+            JdbcTemplate jdbcTemplate
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -63,6 +66,7 @@ public class DataInitializer implements CommandLineRunner {
         this.eventoRepository = eventoRepository;
         this.escalaArbitroRepository = escalaArbitroRepository;
         this.patrocinadorRepository = patrocinadorRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -246,6 +250,77 @@ public class DataInitializer implements CommandLineRunner {
                     )
             ));
             System.out.println(">>> [FMTTEMA] Patrocinadores oficiais iniciais cadastrados com sucesso.");
+        }
+
+        // 7. Cria/Atualiza Views SQL para Ranking de Volume e Eficiência (US12)
+        inicializarViewsRankingSql();
+    }
+
+    private void inicializarViewsRankingSql() {
+        try {
+            jdbcTemplate.execute("""
+                    CREATE OR REPLACE VIEW vw_ranking_volume AS
+                    SELECT
+                        a.id AS atleta_id,
+                        a.nome AS nome,
+                        a.apelido AS apelido,
+                        COALESCE(a.categoria, 'Sem Categoria') AS categoria,
+                        COALESCE(a.graduacao, a.kruang, 'Não informada') AS graduacao,
+                        COALESCE(ac.nome, 'Independente') AS academia_nome,
+                        COALESCE(a.vitorias, 0) AS vitorias,
+                        COALESCE(a.derrotas, 0) AS derrotas,
+                        COALESCE(a.empates, 0) AS empates,
+                        (COALESCE(a.vitorias, 0) + COALESCE(a.derrotas, 0) + COALESCE(a.empates, 0)) AS total_lutas,
+                        COALESCE(
+                            ROUND(
+                                (CAST(COALESCE(a.vitorias, 0) AS NUMERIC) * 100.0) /
+                                NULLIF((COALESCE(a.vitorias, 0) + COALESCE(a.derrotas, 0) + COALESCE(a.empates, 0)), 0),
+                                2
+                            ),
+                            0.0
+                        ) AS percentual_aproveitamento
+                    FROM atletas a
+                    LEFT JOIN academias ac ON ac.id = a.academia_id
+                    ORDER BY
+                        COALESCE(a.vitorias, 0) DESC,
+                        percentual_aproveitamento DESC,
+                        COALESCE(a.derrotas, 0) ASC,
+                        a.nome ASC
+                    """);
+
+            jdbcTemplate.execute("""
+                    CREATE OR REPLACE VIEW vw_ranking_eficiencia AS
+                    SELECT
+                        a.id AS atleta_id,
+                        a.nome AS nome,
+                        a.apelido AS apelido,
+                        COALESCE(a.categoria, 'Sem Categoria') AS categoria,
+                        COALESCE(a.graduacao, a.kruang, 'Não informada') AS graduacao,
+                        COALESCE(ac.nome, 'Independente') AS academia_nome,
+                        COALESCE(a.vitorias, 0) AS vitorias,
+                        COALESCE(a.derrotas, 0) AS derrotas,
+                        COALESCE(a.empates, 0) AS empates,
+                        (COALESCE(a.vitorias, 0) + COALESCE(a.derrotas, 0) + COALESCE(a.empates, 0)) AS total_lutas,
+                        COALESCE(
+                            ROUND(
+                                (CAST(COALESCE(a.vitorias, 0) AS NUMERIC) * 100.0) /
+                                NULLIF((COALESCE(a.vitorias, 0) + COALESCE(a.derrotas, 0) + COALESCE(a.empates, 0)), 0),
+                                2
+                            ),
+                            0.0
+                        ) AS percentual_aproveitamento
+                    FROM atletas a
+                    LEFT JOIN academias ac ON ac.id = a.academia_id
+                    WHERE (COALESCE(a.vitorias, 0) + COALESCE(a.derrotas, 0) + COALESCE(a.empates, 0)) >= 3
+                    ORDER BY
+                        percentual_aproveitamento DESC,
+                        COALESCE(a.vitorias, 0) DESC,
+                        COALESCE(a.derrotas, 0) ASC,
+                        a.nome ASC
+                    """);
+            System.out.println(">>> [FMTTEMA] Views SQL 'vw_ranking_volume' e 'vw_ranking_eficiencia' inicializadas com sucesso.");
+        } catch (Exception e) {
+            System.out.println(">>> [FMTTEMA] Aviso ao criar Views de Ranking: " + e.getMessage());
         }
     }
 

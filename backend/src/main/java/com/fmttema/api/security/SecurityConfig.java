@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/arbitros/me/**").hasAnyRole("ARBITRO", "ADMIN")
                         .requestMatchers("/api/arbitros/**").hasAnyRole("ADMIN", "ARBITRO")
+                        .requestMatchers(HttpMethod.GET, "/api/publico/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/patrocinadores/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/api/patrocinadores/**").hasRole("ADMIN")
