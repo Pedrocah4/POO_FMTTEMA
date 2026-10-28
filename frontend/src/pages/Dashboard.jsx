@@ -9,6 +9,7 @@ import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
 import PainelFinanceiroAnuidades from '../components/PainelFinanceiroAnuidades';
 import PainelDashboardAnalitico from '../components/PainelDashboardAnalitico';
 import PainelComercialParceiros from '../components/PainelComercialParceiros';
+import TabelaRankingEstadual from '../components/TabelaRankingEstadual';
 import {
   Users,
   Trophy,
@@ -82,6 +83,9 @@ export default function Dashboard() {
 
         {/* Painel Comercial: Gestão de Patrocinadores e Exibição de Parceiros (US11) */}
         {user?.perfil === 'ADMIN' && <PainelComercialParceiros />}
+
+        {/* Vitrine de Ranking Estadual Dinâmico (US12) */}
+        <TabelaRankingEstadual />
 
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">

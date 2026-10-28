@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from './FmttemaLogo';
-import { LogOut, User, Shield, Trophy, LayoutDashboard } from 'lucide-react';
+import { LogOut, User, Shield, Trophy, LayoutDashboard, Medal } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -40,6 +40,18 @@ export default function Navbar() {
             >
               <Trophy className="w-3.5 h-3.5 text-yellow-400" />
               <span>Chaves de Luta</span>
+            </Link>
+
+            <Link
+              to="/ranking"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
+                location.pathname === '/ranking'
+                  ? 'bg-white/15 text-white shadow-sm border border-amber-400/30'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Medal className="w-3.5 h-3.5 text-amber-400" />
+              <span>Ranking Estadual</span>
             </Link>
           </nav>
         </div>

@@ -4,14 +4,16 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ChavesTorneio from './pages/ChavesTorneio';
+import RankingPublico from './pages/RankingPublico';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Rota pública de Login */}
+          {/* Rotas públicas (sem exigência de login) */}
           <Route path="/login" element={<Login />} />
+          <Route path="/ranking" element={<RankingPublico />} />
 
           {/* Rotas protegidas pela Guarda de Rotas (PrivateRoute) */}
           <Route element={<PrivateRoute />}>

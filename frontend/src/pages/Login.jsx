@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from '../components/FmttemaLogo';
 import VitrineParceiros from '../components/VitrineParceiros';
-import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2, Sparkles, Shield } from 'lucide-react';
+import TabelaRankingEstadual from '../components/TabelaRankingEstadual';
+import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2, Sparkles, Shield, Trophy } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -170,16 +171,24 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Botão rápido para testes */}
-            <div className="mt-6 pt-5 border-t border-slate-100 text-center">
+            {/* Botão rápido para testes e Acesso à Vitrine Pública de Ranking */}
+            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col gap-2.5 text-center">
               <button
                 type="button"
                 onClick={handlePreencherAdmin}
-                className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-fmt-blue transition-colors px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200"
+                className="inline-flex items-center justify-center gap-1.5 text-xs text-slate-600 hover:text-fmt-blue transition-colors px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Preencher com credenciais padrão (admin)</span>
               </button>
+
+              <Link
+                to="/ranking"
+                className="inline-flex items-center justify-center gap-1.5 text-xs font-heading font-bold text-fmt-blue hover:text-white hover:bg-fmt-blue transition-colors px-3 py-2 rounded-lg bg-blue-50 border border-blue-200"
+              >
+                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                <span>Acessar Vitrine Pública de Ranking Estadual</span>
+              </Link>
             </div>
           </div>
 
@@ -188,6 +197,11 @@ export default function Login() {
             Acesso restrito para atletas, técnicos e administradores homologados.
           </p>
         </div>
+      </div>
+
+      {/* Vitrine Pública do Ranking Estadual Oficial (US12 - Acesso Público Direto) */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <TabelaRankingEstadual />
       </div>
 
       {/* Vitrine Pública de Patrocinadores e Parceiros Oficiais (US11) */}
