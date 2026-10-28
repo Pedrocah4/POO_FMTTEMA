@@ -8,6 +8,7 @@ import PainelEscalaArbitro from '../components/PainelEscalaArbitro';
 import GestaoEscalasArbitros from '../components/GestaoEscalasArbitros';
 import PainelFinanceiroAnuidades from '../components/PainelFinanceiroAnuidades';
 import PainelDashboardAnalitico from '../components/PainelDashboardAnalitico';
+import PainelComercialParceiros from '../components/PainelComercialParceiros';
 import {
   Users,
   Trophy,
@@ -16,7 +17,8 @@ import {
   KeyRound,
   ShieldCheck,
   FileText,
-  Activity
+  Activity,
+  Handshake
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -77,6 +79,9 @@ export default function Dashboard() {
 
         {/* Painel Financeiro de Aprovação e Baixa de Pagamentos (US09) */}
         {user?.perfil === 'ADMIN' && <PainelFinanceiroAnuidades />}
+
+        {/* Painel Comercial: Gestão de Patrocinadores e Exibição de Parceiros (US11) */}
+        {user?.perfil === 'ADMIN' && <PainelComercialParceiros />}
 
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">

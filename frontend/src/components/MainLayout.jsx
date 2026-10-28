@@ -1,4 +1,5 @@
 import Navbar from './Navbar';
+import VitrineParceiros from './VitrineParceiros';
 
 export default function MainLayout({ children }) {
   return (
@@ -11,8 +12,11 @@ export default function MainLayout({ children }) {
         {children}
       </div>
 
+      {/* Vitrine Comercial de Patrocinadores e Parceiros Oficiais (US11) */}
+      <VitrineParceiros />
+
       {/* Rodapé Institucional Oficial */}
-      <footer className="bg-white border-t border-slate-200 mt-16 py-8 text-slate-600 text-xs">
+      <footer className="bg-white border-t border-slate-200 mt-10 py-8 text-slate-600 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <p className="font-heading font-bold text-fmt-blue text-sm">

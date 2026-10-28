@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from '../components/FmttemaLogo';
+import VitrineParceiros from '../components/VitrineParceiros';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2, Sparkles, Shield } from 'lucide-react';
 
 export default function Login() {
@@ -188,6 +189,9 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      {/* Vitrine Pública de Patrocinadores e Parceiros Oficiais (US11) */}
+      <VitrineParceiros compact={true} />
 
       {/* Rodapé Oficial da página de login */}
       <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">

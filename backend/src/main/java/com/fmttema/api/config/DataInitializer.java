@@ -19,9 +19,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import com.fmttema.api.models.EscalaArbitro;
 import com.fmttema.api.models.Evento;
+import com.fmttema.api.models.Patrocinador;
 import com.fmttema.api.models.StatusPresencaArbitro;
 import com.fmttema.api.repositories.EscalaArbitroRepository;
 import com.fmttema.api.repositories.EventoRepository;
+import com.fmttema.api.repositories.PatrocinadorRepository;
 
 import java.util.List;
 
@@ -35,6 +37,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AcademiaRepository academiaRepository;
     private final EventoRepository eventoRepository;
     private final EscalaArbitroRepository escalaArbitroRepository;
+    private final PatrocinadorRepository patrocinadorRepository;
 
     @Value("${admin.default.email:admin@fmttema.com}")
     private String adminEmail;
@@ -49,7 +52,8 @@ public class DataInitializer implements CommandLineRunner {
             AtletaRepository atletaRepository,
             AcademiaRepository academiaRepository,
             EventoRepository eventoRepository,
-            EscalaArbitroRepository escalaArbitroRepository
+            EscalaArbitroRepository escalaArbitroRepository,
+            PatrocinadorRepository patrocinadorRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -58,6 +62,7 @@ public class DataInitializer implements CommandLineRunner {
         this.academiaRepository = academiaRepository;
         this.eventoRepository = eventoRepository;
         this.escalaArbitroRepository = escalaArbitroRepository;
+        this.patrocinadorRepository = patrocinadorRepository;
     }
 
     @Override
@@ -202,6 +207,45 @@ public class DataInitializer implements CommandLineRunner {
             escalaInicial.setObservacoes("Convocação oficial para o torneio de abertura da temporada.");
             escalaArbitroRepository.save(escalaInicial);
             System.out.println(">>> [FMTTEMA] Escala inicial do árbitro criada com sucesso (Status: PENDENTE).");
+        }
+
+        // 6. Inicializa patrocinadores oficiais padrão (US11) se não existirem
+        if (patrocinadorRepository.count() == 0) {
+            patrocinadorRepository.saveAll(List.of(
+                    new Patrocinador(
+                            "Maximum Boxing Brasil",
+                            "https://www.maximumshop.com.br",
+                            "https://placehold.co/320x120/002868/FFFFFF?text=MAXIMUM+BOXING",
+                            "Patrocinador Master",
+                            true,
+                            1
+                    ),
+                    new Patrocinador(
+                            "Yokkao Muaythai Gear",
+                            "https://yokkao.com",
+                            "https://placehold.co/320x120/D91C22/FFFFFF?text=YOKKAO+THAILAND",
+                            "Material Esportivo",
+                            true,
+                            2
+                    ),
+                    new Patrocinador(
+                            "Fairtex Fight Equipment",
+                            "https://www.fairtex.com",
+                            "https://placehold.co/320x120/0f172a/FFFFFF?text=FAIRTEX+OFFICIAL",
+                            "Patrocinador Ouro",
+                            true,
+                            3
+                    ),
+                    new Patrocinador(
+                            "Governo do Maranhão - SEDEL",
+                            "https://sedel.ma.gov.br",
+                            "https://placehold.co/320x120/059669/FFFFFF?text=SEDEL+MARANHAO",
+                            "Apoio Institucional",
+                            true,
+                            4
+                    )
+            ));
+            System.out.println(">>> [FMTTEMA] Patrocinadores oficiais iniciais cadastrados com sucesso.");
         }
     }
 
