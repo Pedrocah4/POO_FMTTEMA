@@ -13,6 +13,8 @@ import java.util.Optional;
 @Repository
 public interface AcademiaRepository extends JpaRepository<Academia, Long> {
     Optional<Academia> findByNome(String nome);
+    Optional<Academia> findByCnpj(String cnpj);
+    boolean existsByCnpj(String cnpj);
     Optional<Academia> findByUsuarioId(Long usuarioId);
 
     @Query("SELECT COUNT(ac) FROM Academia ac WHERE ac.usuario.status = :status")

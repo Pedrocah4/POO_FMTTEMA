@@ -14,6 +14,7 @@ import com.fmttema.api.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -30,6 +31,7 @@ import com.fmttema.api.repositories.PatrocinadorRepository;
 import java.util.List;
 
 @Configuration
+@Order(1)
 public class DataInitializer implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
@@ -72,16 +74,25 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // 1. Cria usuário Admin padrão se não existir
-        if (usuarioRepository.count() == 0) {
+        atualizarConstraintsEnumsBanco();
+
+        // 1. Cria ou garante usuário Admin padrão como ATIVO
+        usuarioRepository.findByEmail(adminEmail).ifPresentOrElse(adminExistente -> {
+            if (adminExistente.getStatus() != StatusUsuario.ATIVO) {
+                adminExistente.setStatus(StatusUsuario.ATIVO);
+                usuarioRepository.save(adminExistente);
+            }
+        }, () -> {
             Usuario admin = new Usuario(
                     adminEmail,
                     passwordEncoder.encode(adminPassword),
-                    PerfilAcesso.ADMIN
+                    PerfilAcesso.ADMIN,
+                    StatusUsuario.ATIVO
             );
+            admin.setNome("Diretoria Executiva FMTTEMA");
             usuarioRepository.save(admin);
             System.out.println(">>> [FMTTEMA] Usuário administrador padrão inicializado com sucesso: " + adminEmail);
-        }
+        });
 
         // 2. Inicializa as categorias oficiais de Muaythai
         if (categoriaPesoRepository.count() == 0) {
@@ -387,6 +398,18 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println(">>> [FMTTEMA] Views SQL 'vw_ranking_volume' e 'vw_ranking_eficiencia' inicializadas com sucesso.");
         } catch (Exception e) {
             System.out.println(">>> [FMTTEMA] Aviso ao criar Views de Ranking: " + e.getMessage());
+        }
+    }
+
+    private void atualizarConstraintsEnumsBanco() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_perfil_check");
+            jdbcTemplate.execute("ALTER TABLE usuarios DROP CONSTRAINT IF EXISTS usuarios_status_check");
+            jdbcTemplate.execute("ALTER TABLE inscricoes DROP CONSTRAINT IF EXISTS inscricoes_status_check");
+            jdbcTemplate.execute("ALTER TABLE eventos DROP CONSTRAINT IF EXISTS eventos_status_check");
+            jdbcTemplate.execute("ALTER TABLE escalas_arbitros DROP CONSTRAINT IF EXISTS escalas_arbitros_status_presenca_check");
+        } catch (Exception e) {
+            System.out.println(">>> [FMTTEMA] Aviso ao atualizar constraints de enum: " + e.getMessage());
         }
     }
 

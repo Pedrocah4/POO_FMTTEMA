@@ -56,6 +56,12 @@ public class FluxoCaixa implements Serializable {
     @Column(length = 255)
     private String observacoes;
 
+    @Column(name = "metodo_pagamento", length = 30)
+    private String metodoPagamento = "PIX";
+
+    @Column(name = "status_transacao", length = 30)
+    private String statusTransacao = "APROVADO";
+
     public FluxoCaixa() {
     }
 
@@ -148,6 +154,22 @@ public class FluxoCaixa implements Serializable {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public String getMetodoPagamento() {
+        return metodoPagamento;
+    }
+
+    public void setMetodoPagamento(String metodoPagamento) {
+        this.metodoPagamento = metodoPagamento;
+    }
+
+    public String getStatusTransacao() {
+        return statusTransacao;
+    }
+
+    public void setStatusTransacao(String statusTransacao) {
+        this.statusTransacao = statusTransacao;
     }
 
     @Override

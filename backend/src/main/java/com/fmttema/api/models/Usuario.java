@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,18 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private StatusUsuario status = StatusUsuario.PENDENTE_APROVACAO;
+
+    @Column(name = "nome", length = 150)
+    private String nome;
+
+    @Column(name = "numero_licenca", unique = true, length = 60)
+    private String numeroLicenca;
+
+    @Column(name = "data_validade_licenca")
+    private LocalDate dataValidadeLicenca;
+
+    @Column(name = "nivel_arbitragem", length = 40)
+    private String nivelArbitragem;
 
     public Usuario() {
     }
@@ -112,6 +125,38 @@ public class Usuario implements UserDetails {
 
     public void setStatus(StatusUsuario status) {
         this.status = status;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public String getNumeroLicenca() {
+        return numeroLicenca;
+    }
+
+    public void setNumeroLicenca(String numeroLicenca) {
+        this.numeroLicenca = numeroLicenca;
+    }
+
+    public LocalDate getDataValidadeLicenca() {
+        return dataValidadeLicenca;
+    }
+
+    public void setDataValidadeLicenca(LocalDate dataValidadeLicenca) {
+        this.dataValidadeLicenca = dataValidadeLicenca;
+    }
+
+    public String getNivelArbitragem() {
+        return nivelArbitragem;
+    }
+
+    public void setNivelArbitragem(String nivelArbitragem) {
+        this.nivelArbitragem = nivelArbitragem;
     }
 
     @Override

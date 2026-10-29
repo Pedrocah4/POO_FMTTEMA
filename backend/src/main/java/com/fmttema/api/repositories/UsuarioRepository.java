@@ -15,7 +15,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByEmail(String email);
 
+    boolean existsByNumeroLicenca(String numeroLicenca);
+
     List<Usuario> findByStatus(StatusUsuario status);
+
+    List<Usuario> findByStatusIn(List<StatusUsuario> statuses);
 
     Long countByPerfil(com.fmttema.api.models.PerfilAcesso perfil);
 

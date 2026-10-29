@@ -32,6 +32,9 @@ public class Academia implements Serializable {
     @Column(nullable = false, length = 150)
     private String nome;
 
+    @Column(name = "cnpj", unique = true, length = 20)
+    private String cnpj;
+
     @Column(length = 150)
     private String responsavel;
 
@@ -89,6 +92,14 @@ public class Academia implements Serializable {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
     }
 
     public String getResponsavel() {

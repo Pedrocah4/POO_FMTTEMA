@@ -12,6 +12,8 @@ public interface FluxoCaixaRepository extends JpaRepository<FluxoCaixa, Long> {
 
     List<FluxoCaixa> findAllByOrderByDataHoraDesc();
 
+    boolean existsByDescricao(String descricao);
+
     List<FluxoCaixa> findByAtletaId(Long atletaId);
 
     List<FluxoCaixa> findByAcademiaId(Long academiaId);

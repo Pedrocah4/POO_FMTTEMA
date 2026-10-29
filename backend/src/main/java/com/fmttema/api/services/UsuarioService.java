@@ -47,11 +47,13 @@ public class UsuarioService {
      */
     @Transactional(readOnly = true)
     public List<UsuarioResponseDTO> listarPendentes() {
-        List<Usuario> pendentes = usuarioRepository.findByStatus(StatusUsuario.PENDENTE_APROVACAO);
+        List<Usuario> pendentes = usuarioRepository.findByStatusIn(
+                List.of(StatusUsuario.PENDENTE_APROVACAO, StatusUsuario.PENDENTE)
+        );
 
         return pendentes.stream().map(usuario -> {
-            String nome = null;
-            String documento = null;
+            String nome = usuario.getNome();
+            String documento = usuario.getNumeroLicenca();
 
             if (usuario.getPerfil() == PerfilAcesso.ATLETA) {
                 var atletaOpt = atletaRepository.findByUsuarioId(usuario.getId());
