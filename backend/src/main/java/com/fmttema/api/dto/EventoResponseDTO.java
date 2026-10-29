@@ -14,6 +14,8 @@ public record EventoResponseDTO(
         String local,
         String descricao,
         StatusEvento status,
+        String urlIngresso,
+        String cartazUrl,
         List<CategoriaPesoResponseDTO> categorias
 ) {
     public static EventoResponseDTO fromEntity(Evento evento) {
@@ -30,6 +32,8 @@ public record EventoResponseDTO(
                 evento.getLocal(),
                 evento.getDescricao(),
                 evento.getStatus(),
+                evento.getUrlIngresso(),
+                evento.getCartazUrl(),
                 categoriasDTO
         );
     }

@@ -26,6 +26,20 @@ public record EventoRequestDTO(
 
         StatusEvento status,
 
-        List<Long> categoriasIds
+        List<Long> categoriasIds,
+
+        String urlIngresso,
+
+        String cartazUrl
 ) {
+    public EventoRequestDTO(
+            String nome,
+            LocalDate data,
+            String local,
+            String descricao,
+            StatusEvento status,
+            List<Long> categoriasIds
+    ) {
+        this(nome, data, local, descricao, status, categoriasIds, null, null);
+    }
 }

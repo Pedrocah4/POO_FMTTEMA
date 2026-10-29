@@ -1,5 +1,6 @@
 package com.fmttema.api.services;
 
+import com.fmttema.api.dto.EventoPublicoResponseDTO;
 import com.fmttema.api.dto.EventoRequestDTO;
 import com.fmttema.api.dto.EventoResponseDTO;
 import com.fmttema.api.models.CategoriaPeso;
@@ -42,6 +43,8 @@ public class EventoService {
         evento.setLocal(dto.local());
         evento.setDescricao(dto.descricao());
         evento.setStatus(dto.status() != null ? dto.status() : StatusEvento.AGENDADO);
+        evento.setUrlIngresso(dto.urlIngresso() != null && !dto.urlIngresso().isBlank() ? dto.urlIngresso().trim() : null);
+        evento.setCartazUrl(dto.cartazUrl() != null && !dto.cartazUrl().isBlank() ? dto.cartazUrl().trim() : null);
 
         if (dto.categoriasIds() != null && !dto.categoriasIds().isEmpty()) {
             List<CategoriaPeso> categorias = categoriaPesoRepository.findAllById(dto.categoriasIds());
@@ -61,6 +64,17 @@ public class EventoService {
     public List<EventoResponseDTO> listarEventos() {
         return eventoRepository.findAll(Sort.by(Sort.Direction.ASC, "data")).stream()
                 .map(EventoResponseDTO::fromEntity)
+                .toList();
+    }
+
+    /**
+     * US13: Retorna apenas eventos ativos (datas futuras ou em andamento) usando DTO público seguro,
+     * sem expor dados sensíveis do administrador ou faturamento financeiro do evento.
+     */
+    @Transactional(readOnly = true)
+    public List<EventoPublicoResponseDTO> listarEventosPublicosAtivos() {
+        return eventoRepository.buscarEventosPublicosAtivos(LocalDate.now()).stream()
+                .map(EventoPublicoResponseDTO::fromEntity)
                 .toList();
     }
 

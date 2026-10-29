@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import com.fmttema.api.models.EscalaArbitro;
 import com.fmttema.api.models.Evento;
 import com.fmttema.api.models.Patrocinador;
+import com.fmttema.api.models.StatusEvento;
 import com.fmttema.api.models.StatusPresencaArbitro;
 import com.fmttema.api.repositories.EscalaArbitroRepository;
 import com.fmttema.api.repositories.EventoRepository;
@@ -254,6 +255,71 @@ public class DataInitializer implements CommandLineRunner {
 
         // 7. Cria/Atualiza Views SQL para Ranking de Volume e Eficiência (US12)
         inicializarViewsRankingSql();
+
+        // 8. Inicializa/atualiza eventos oficiais ativos para a Vitrine Pública (US13)
+        inicializarEventosVitrinePublica();
+    }
+
+    private void inicializarEventosVitrinePublica() {
+        List<CategoriaPeso> todasCategorias = categoriaPesoRepository.findAll();
+
+        // Atualiza eventos existentes que estejam com data no passado mas ainda AGENDADO, ou sem cartaz/ingresso
+        eventoRepository.findAll().forEach(ev -> {
+            boolean alterado = false;
+            if (ev.getStatus() == StatusEvento.AGENDADO && ev.getData() != null && ev.getData().isBefore(LocalDate.now())) {
+                ev.setData(LocalDate.now().plusDays(15));
+                alterado = true;
+            }
+            if (ev.getCartazUrl() == null || ev.getCartazUrl().isBlank()) {
+                ev.setCartazUrl("https://placehold.co/600x340/002868/FFFFFF?text=CIRCUITO+MARANHENSE+MUAYTHAI");
+                alterado = true;
+            }
+            if (ev.getUrlIngresso() == null && !ev.getNome().toLowerCase().contains("seminário")) {
+                ev.setUrlIngresso("https://www.sympla.com.br/eventos/esportes");
+                alterado = true;
+            }
+            if (alterado) {
+                eventoRepository.save(ev);
+            }
+        });
+
+        if (eventoRepository.buscarEventosPublicosAtivos(LocalDate.now()).size() < 3) {
+            Evento etapaEstadual = new Evento(
+                    "1ª Etapa do Campeonato Maranhense de Muaythai Tradicional",
+                    LocalDate.now().plusDays(20),
+                    "Ginásio Georgiana Pflueger (Castelinho) - São Luís/MA",
+                    StatusEvento.AGENDADO,
+                    "Abertura oficial do calendário estadual FMTTEMA com disputas de cinturão amador e semi-pro."
+            );
+            etapaEstadual.setUrlIngresso("https://www.sympla.com.br/eventos/esportes");
+            etapaEstadual.setCartazUrl("https://placehold.co/600x340/002868/FFFFFF?text=CAMPEONATO+MARANHENSE+2026");
+            etapaEstadual.setCategorias(new java.util.ArrayList<>(todasCategorias.stream().limit(4).toList()));
+
+            Evento copaIlha = new Evento(
+                    "Grand Prix Ilha Bela de Muaythai - Edição Noturna",
+                    LocalDate.now().plusDays(45),
+                    "Arena Dom Bosco - Renascença, São Luís/MA",
+                    StatusEvento.EM_ANDAMENTO,
+                    "Card principal com superlutas estaduais e seletiva oficial para o Campeonato Brasileiro."
+            );
+            copaIlha.setUrlIngresso("https://www.bilheteriadigital.com");
+            copaIlha.setCartazUrl("https://placehold.co/600x340/D91C22/FFFFFF?text=GRAND+PRIX+ILHA+BELA");
+            copaIlha.setCategorias(new java.util.ArrayList<>(todasCategorias.stream().skip(2).limit(4).toList()));
+
+            Evento seminarioEntradaFranca = new Evento(
+                    "Festival Estadual de Graduação Khan & Pesagem Aberta",
+                    LocalDate.now().plusDays(65),
+                    "Centro de Treinamento Oficial FMTTEMA - São Luís/MA",
+                    StatusEvento.AGENDADO,
+                    "Evento institucional gratuito (sem venda de ingressos) para homologação técnica e exames de Khan."
+            );
+            seminarioEntradaFranca.setUrlIngresso(null);
+            seminarioEntradaFranca.setCartazUrl("https://placehold.co/600x340/0f172a/FFFFFF?text=FESTIVAL+KRUANG+FMTTEMA");
+            seminarioEntradaFranca.setCategorias(new java.util.ArrayList<>(todasCategorias.stream().limit(3).toList()));
+
+            eventoRepository.saveAll(List.of(etapaEstadual, copaIlha, seminarioEntradaFranca));
+            System.out.println(">>> [FMTTEMA] Eventos públicos ativos inicializados com sucesso (US13).");
+        }
     }
 
     private void inicializarViewsRankingSql() {

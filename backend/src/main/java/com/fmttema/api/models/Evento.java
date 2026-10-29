@@ -46,7 +46,13 @@ public class Evento implements Serializable {
     @Column(nullable = false, length = 30)
     private StatusEvento status = StatusEvento.AGENDADO;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Column(name = "url_ingresso", length = 500)
+    private String urlIngresso;
+
+    @Column(name = "cartaz_url", length = 500)
+    private String cartazUrl;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "eventos_categorias",
         joinColumns = @JoinColumn(name = "evento_id", referencedColumnName = "id"),
@@ -151,6 +157,22 @@ public class Evento implements Serializable {
 
     public void setCategorias(List<CategoriaPeso> categorias) {
         this.categorias = categorias;
+    }
+
+    public String getUrlIngresso() {
+        return urlIngresso;
+    }
+
+    public void setUrlIngresso(String urlIngresso) {
+        this.urlIngresso = urlIngresso;
+    }
+
+    public String getCartazUrl() {
+        return cartazUrl;
+    }
+
+    public void setCartazUrl(String cartazUrl) {
+        this.cartazUrl = cartazUrl;
     }
 
     @Override
