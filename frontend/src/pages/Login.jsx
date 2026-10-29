@@ -183,11 +183,11 @@ export default function Login() {
               </button>
 
               <Link
-                to="/ranking"
+                to="/"
                 className="inline-flex items-center justify-center gap-1.5 text-xs font-heading font-bold text-fmt-blue hover:text-white hover:bg-fmt-blue transition-colors px-3 py-2 rounded-lg bg-blue-50 border border-blue-200"
               >
                 <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                <span>Acessar Vitrine Pública de Ranking Estadual</span>
+                <span>Voltar para a Vitrine Principal (Eventos & Ranking)</span>
               </Link>
             </div>
           </div>

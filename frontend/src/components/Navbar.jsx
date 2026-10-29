@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from './FmttemaLogo';
-import { LogOut, User, Shield, Trophy, LayoutDashboard, Medal } from 'lucide-react';
+import { LogOut, User, Shield, Trophy, LayoutDashboard, Medal, Calendar } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -52,6 +52,14 @@ export default function Navbar() {
             >
               <Medal className="w-3.5 h-3.5 text-amber-400" />
               <span>Ranking Estadual</span>
+            </Link>
+
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Calendar className="w-3.5 h-3.5 text-fmt-red" />
+              <span>Vitrine & Eventos</span>
             </Link>
           </nav>
         </div>

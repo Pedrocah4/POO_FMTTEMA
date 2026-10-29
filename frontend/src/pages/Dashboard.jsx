@@ -10,6 +10,7 @@ import PainelFinanceiroAnuidades from '../components/PainelFinanceiroAnuidades';
 import PainelDashboardAnalitico from '../components/PainelDashboardAnalitico';
 import PainelComercialParceiros from '../components/PainelComercialParceiros';
 import TabelaRankingEstadual from '../components/TabelaRankingEstadual';
+import CalendarioEventosPublico from '../components/CalendarioEventosPublico';
 import {
   Users,
   Trophy,
@@ -87,6 +88,9 @@ export default function Dashboard() {
         {/* Vitrine de Ranking Estadual Dinâmico (US12) */}
         <TabelaRankingEstadual />
 
+        {/* Calendário Oficial de Eventos Ativos e Bilheteria (US13) */}
+        <CalendarioEventosPublico />
+
         {/* Seção dos Módulos Principais com DashboardCards */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -122,6 +126,7 @@ export default function Dashboard() {
               icon={Calendar}
               badge="Circuito MA"
               actionText="Ver calendário"
+              onAction={() => document.getElementById('calendario-eventos')?.scrollIntoView({ behavior: 'smooth' })}
               stat={{ value: "04", label: "etapas previstas" }}
             />
 
