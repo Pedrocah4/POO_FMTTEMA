@@ -137,7 +137,7 @@ export default function PainelFinanceiroAnuidades() {
             <span>Tesouraria Oficial FMTTEMA</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl text-fmt-blue">
-            Gestão Financeira de Anuidades (US09)
+            Gestão Financeira de Anuidades
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Controle de adimplência, baixa manual com anexo de comprovante e integração atômica com o fluxo de caixa.

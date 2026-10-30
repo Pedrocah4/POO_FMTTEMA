@@ -103,7 +103,7 @@ export default function TabelaPendencias() {
           </div>
           <div>
             <h3 className="font-heading font-bold text-base text-fmt-blue">
-              Fila de Homologação e Credenciamento (US03)
+              Fila de Homologação e Credenciamento
             </h3>
             <p className="text-xs text-slate-500">
               Solicitações de atletas e academias aguardando análise da diretoria federativa

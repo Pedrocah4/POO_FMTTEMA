@@ -121,7 +121,7 @@ export default function GestaoEscalasArbitros() {
             <span>Gestão Administrativa</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl text-fmt-blue">
-            Escala e Confirmação de Árbitros (US08)
+            Escala e Confirmação de Árbitros
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Acompanhe em tempo real quais árbitros confirmaram presença e convoque novos oficiais para os torneios.

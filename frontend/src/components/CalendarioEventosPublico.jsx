@@ -106,7 +106,7 @@ export default function CalendarioEventosPublico() {
             <span>Circuito Oficial Maranhense • Temporada 2026</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-fmt-blue tracking-tight">
-            Calendário de Eventos e Bilheteria Oficial (US13)
+            Calendário de Eventos e Bilheteria Oficial
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
             Confira as próximas etapas do Campeonato Maranhense de Muaythai Tradicional, locais de competição e adquira seus ingressos oficiais.

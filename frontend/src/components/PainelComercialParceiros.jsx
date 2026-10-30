@@ -505,7 +505,7 @@ export default function PainelComercialParceiros() {
             <span>Módulo Comercial & Marketing Esportivo</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl text-fmt-blue">
-            Gestão de Patrocinadores e Exibição de Parceiros (US11)
+            Gestão de Patrocinadores e Parceiros
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Cadastre marcas parceiras via link direto ou upload de logomarca e gerencie o carrossel/grid institucional da Federação.

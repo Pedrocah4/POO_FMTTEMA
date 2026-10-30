@@ -127,13 +127,13 @@ export default function PainelDashboardAnalitico() {
         <div>
           <div className="inline-flex items-center gap-1.5 text-xs font-bold text-fmt-blue uppercase tracking-wider mb-1">
             <BarChart3 className="w-4 h-4 text-fmt-blue" />
-            <span>Painel de Inteligência Analítica (US10)</span>
+            <span>Painel de Inteligência Analítica</span>
           </div>
           <h2 className="font-heading font-bold text-xl text-fmt-blue">
-            Métricas e Agregações Consolidadas
+            Métricas e Indicadores da Federação
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Cálculos e totais consolidados processados diretamente no PostgreSQL da FMTTEMA.
+            Dados e totais consolidados da administração esportiva e financeira.
           </p>
         </div>
 
@@ -312,7 +312,7 @@ export default function PainelDashboardAnalitico() {
                 Atletas por Graduação (Prajied)
               </h3>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                Contagem agregada via banco de dados (`GROUP BY graduacao`)
+                Distribuição homologada por nível técnico de graduação
               </p>
             </div>
             <span className="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">

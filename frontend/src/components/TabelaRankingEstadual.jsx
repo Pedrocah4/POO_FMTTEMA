@@ -173,10 +173,10 @@ export default function TabelaRankingEstadual() {
             <span>Vitrine Esportiva Pública • Temporada 2026</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-fmt-blue tracking-tight">
-            Ranking Estadual Oficial de Lutadores (US12)
+            Ranking Estadual Oficial de Lutadores
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            Classificação oficial da Federação de Muaythai Tradicional do Maranhão processada diretamente em SQL por volume de vitórias e eficiência de aproveitamento.
+            Classificação oficial da Federação de Muaythai Tradicional do Maranhão por volume de vitórias e eficiência de aproveitamento.
           </p>
         </div>
 
@@ -303,7 +303,7 @@ export default function TabelaRankingEstadual() {
             </span>
           ) : (
             <span>
-              <strong>Visão ativa: Melhor Aproveitamento (%)</strong> — Fórmula matemática calculada no banco de dados filtrando atletas com <strong>mínimo de {minimoLutas} lutas oficiais</strong>.
+              <strong>Visão ativa: Melhor Aproveitamento (%)</strong> — Aproveitamento proporcional de vitórias para atletas com <strong>mínimo de {minimoLutas} lutas oficiais</strong>.
             </span>
           )}
         </div>
