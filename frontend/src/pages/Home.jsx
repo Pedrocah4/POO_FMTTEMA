@@ -69,13 +69,22 @@ export default function Home() {
                 <span>Acessar Meu Painel</span>
               </Link>
             ) : (
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold text-white bg-fmt-red hover:bg-fmt-red-hover shadow-sm transition-all"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Área do Filiado (Login)</span>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/cadastrar"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-heading font-semibold text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 transition-all"
+                >
+                  <Users className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Filie-se</span>
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold text-white bg-fmt-red hover:bg-fmt-red-hover shadow-sm transition-all"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Área do Filiado (Login)</span>
+                </Link>
+              </div>
             )}
           </div>
         </div>

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate, Navigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from '../components/FmttemaLogo';
-import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2, Sparkles, Shield, ArrowLeft, UserCheck } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, AlertCircle, Loader2, Sparkles, Shield, ArrowLeft, UserCheck, CheckCircle2, UserPlus } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -13,6 +14,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Mensagem de sucesso via redirecionamento de cadastro (/cadastrar)
+  const params = new URLSearchParams(location.search);
+  const cadastradoComSucesso = params.get('sucesso') === 'cadastro_pendente' || Boolean(location.state?.mensagemSucesso);
+  const mensagemSucesso = location.state?.mensagemSucesso || 
+    'Cadastro recebido com sucesso! Sua conta foi criada com status PENDENTE_APROVACAO e será liberada após homologação da diretoria da FMTTEMA.';
 
   // Se já estiver logado, redireciona diretamente para o dashboard
   if (isAuthenticated) {
@@ -81,6 +88,22 @@ export default function Login() {
                 <span>Portal Oficial de Gestão Esportiva</span>
               </div>
             </div>
+
+            {/* Alerta de Sucesso no Auto-Cadastro (Redirecionado de /cadastrar) */}
+            {cadastradoComSucesso && (
+              <div 
+                role="status"
+                className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs sm:text-sm flex items-start gap-3 animate-in fade-in duration-200 shadow-sm"
+              >
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="flex-1 leading-relaxed">
+                  <strong className="block font-heading font-bold text-emerald-800 mb-0.5">
+                    Solicitação Registrada!
+                  </strong>
+                  {mensagemSucesso}
+                </div>
+              </div>
+            )}
 
             {/* Mensagem de Erro 401 ou Conexão */}
             {errorMessage && (
@@ -165,6 +188,20 @@ export default function Login() {
                   <span>Entrar no Sistema</span>
                 )}
               </button>
+
+              {/* Link de Auto-Cadastro Público (US01) */}
+              <div className="pt-2 text-center">
+                <p className="text-xs text-slate-500 mb-2">
+                  Ainda não possui credencial homologada na FMTTEMA?
+                </p>
+                <Link
+                  to="/cadastrar"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-fmt-blue font-heading font-bold text-xs border border-slate-200 transition-all cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4 text-fmt-red" />
+                  <span>Solicitar Auto-Cadastro (Atleta ou Academia)</span>
+                </Link>
+              </div>
             </form>
 
             {/* Acesso rápido para testes de perfil e retorno à vitrine */}

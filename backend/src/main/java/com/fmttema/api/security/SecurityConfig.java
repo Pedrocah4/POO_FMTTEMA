@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/atletas").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/academias").permitAll()
+                        .requestMatchers("/api/academias", "/api/academias/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/atletas/*/cartel").hasAnyRole("ADMIN", "TREINADOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/atletas/*/pagamento").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/eventos/*/inscrever").authenticated()
