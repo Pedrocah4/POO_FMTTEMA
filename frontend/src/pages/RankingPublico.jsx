@@ -1,54 +1,69 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from '../components/FmttemaLogo';
-import Navbar from '../components/Navbar';
 import TabelaRankingEstadual from '../components/TabelaRankingEstadual';
 import VitrineParceiros from '../components/VitrineParceiros';
-import { Shield, LogIn, ArrowLeft } from 'lucide-react';
+import { Shield, LogIn, ArrowLeft, LayoutDashboard, Home } from 'lucide-react';
 
 export default function RankingPublico() {
   const { isAuthenticated } = useAuth();
 
   return (
     <div className="min-h-screen bg-fmt-light text-fmt-dark flex flex-col font-sans antialiased">
-      {/* Se autenticado, mostra a Navbar completa; se visitante público, mostra cabeçalho público oficial */}
-      {isAuthenticated ? (
-        <Navbar />
-      ) : (
-        <header className="bg-fmt-blue text-white shadow-md border-b-4 border-fmt-red sticky top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <Link to="/ranking" className="cursor-pointer">
+      {/* Cabeçalho Institucional do Portal Público Oficial */}
+      <header className="bg-fmt-blue text-white shadow-md border-b-4 border-fmt-red sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="cursor-pointer" title="Voltar à Página Inicial">
               <FmttemaLogo size="md" light={true} />
             </Link>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-slate-200 text-xs border border-white/10 font-medium">
-                <Shield className="w-3.5 h-3.5 text-fmt-red" />
-                <span>Vitrine Pública Oficial</span>
-              </div>
+            <Link
+              to="/"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all"
+            >
+              <Home className="w-3.5 h-3.5 text-fmt-red" />
+              <span>Página Inicial</span>
+            </Link>
+          </div>
 
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-slate-200 text-xs border border-white/10 font-medium">
+              <Shield className="w-3.5 h-3.5 text-fmt-red" />
+              <span>Portal Esportivo Oficial</span>
+            </div>
+
+            {isAuthenticated ? (
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold text-white bg-fmt-red hover:bg-fmt-red-hover shadow-sm transition-all"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Acessar Meu Painel</span>
+              </Link>
+            ) : (
               <Link
                 to="/login"
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-heading font-bold text-white bg-fmt-red hover:bg-fmt-red-hover shadow-sm transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span>Área Restrita (Login)</span>
+                <span>Área do Filiado (Login)</span>
               </Link>
-            </div>
+            )}
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
-      {/* Conteúdo Central da Vitrine de Ranking */}
+      {/* Conteúdo Central da Tabela Oficial de Ranking */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {isAuthenticated && (
           <div className="mb-4 text-left">
             <Link
               to="/dashboard"
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-fmt-blue transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-fmt-blue transition-colors group"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar ao Painel Principal</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Voltar ao Painel Geral com Navegação</span>
             </Link>
           </div>
         )}

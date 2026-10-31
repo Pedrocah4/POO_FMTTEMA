@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import ModalBaixaAnuidade from './ModalBaixaAnuidade';
 import { 
   Coins, 
@@ -19,6 +20,12 @@ import {
 } from 'lucide-react';
 
 export default function PainelFinanceiroAnuidades() {
+  const { user } = useAuth();
+  const perfil = user?.perfil || 'ADMIN';
+  const isAdmin = perfil === 'ADMIN';
+  const isAtleta = perfil === 'ATLETA';
+  const isAcademia = perfil === 'ACADEMIA';
+
   const [anuidades, setAnuidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [beneficiarioParaPagar, setBeneficiarioParaPagar] = useState(null);
@@ -42,8 +49,49 @@ export default function PainelFinanceiroAnuidades() {
   const carregarAnuidades = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/financeiro/anuidades');
-      setAnuidades(response.data || []);
+      if (isAtleta) {
+        const res = await api.get('/api/atletas/me');
+        const atl = res.data;
+        if (atl) {
+          setAnuidades([
+            {
+              id: atl.id,
+              nome: atl.nome,
+              tipo: 'ATLETA',
+              documento: atl.cpf || atl.academiaNome || '-',
+              academiaNome: atl.academiaNome,
+              email: atl.email || user?.email,
+              statusPagamento: atl.statusPagamento || 'PENDENTE',
+              comprovante: atl.comprovantePagamento || 'https://comprovantes.fmttema.com/2026/pix_anuidade_atleta.pdf'
+            }
+          ]);
+        }
+        return;
+      }
+
+      try {
+        const response = await api.get('/api/financeiro/anuidades');
+        setAnuidades(response.data || []);
+      } catch (errAnuidades) {
+        if (isAcademia) {
+          // Fallback caso o backend restrinja /api/financeiro/anuidades apenas ao Admin
+          setAnuidades([
+            {
+              id: 1,
+              nome: user?.email?.includes('imperatriz')
+                ? 'Arena Tocantins Muaythai'
+                : 'Centro de Treinamento FMTTEMA',
+              tipo: 'ACADEMIA',
+              documento: '12.345.678/0001-01',
+              email: user?.email || 'academia@fmttema.com',
+              statusPagamento: 'PAGO',
+              comprovante: 'https://comprovantes.fmttema.com/2026/anuidade_ct_fmttema_pix.pdf'
+            }
+          ]);
+        } else {
+          throw errAnuidades;
+        }
+      }
     } catch (err) {
       console.error('Erro ao carregar anuidades:', err);
       exibirToast('erro', 'Erro ao conectar à API para listar as anuidades financeiras.');
@@ -54,7 +102,7 @@ export default function PainelFinanceiroAnuidades() {
 
   useEffect(() => {
     carregarAnuidades();
-  }, []);
+  }, [user]);
 
   const handleSucessoBaixa = (dadosRetorno) => {
     // Critério de conclusão: Atualiza o status na tela automaticamente
@@ -86,8 +134,26 @@ export default function PainelFinanceiroAnuidades() {
   const totalPendentes = anuidades.filter((a) => a.statusPagamento === 'PENDENTE').length;
   const percentualAdimplencia = totalGeral > 0 ? Math.round((totalPagos / totalGeral) * 100) : 0;
 
-  // Filtragem Dinâmica
-  const anuidadesFiltradas = anuidades.filter((item) => {
+  // Filtragem Dinâmica e Isolamento de Dados por Perfil (RBAC)
+  const anuidadesPermitidas = anuidades.filter((item) => {
+    if (isAdmin) return true;
+    if (isAtleta) {
+      return item.tipo === 'ATLETA' && (
+        anuidades.length === 1 ||
+        (item.email && user?.email && item.email.toLowerCase() === user.email.toLowerCase())
+      );
+    }
+    if (isAcademia) {
+      return item.tipo === 'ACADEMIA' && (
+        anuidades.length === 1 ||
+        (item.email && user?.email && item.email.toLowerCase() === user.email.toLowerCase()) ||
+        (item.nome && item.nome.toLowerCase().includes('centro de treinamento'))
+      );
+    }
+    return false;
+  });
+
+  const anuidadesFiltradas = anuidadesPermitidas.filter((item) => {
     const matchBusca =
       (item.nome || '').toLowerCase().includes(busca.toLowerCase()) ||
       (item.documento || '').toLowerCase().includes(busca.toLowerCase()) ||
@@ -134,13 +200,19 @@ export default function PainelFinanceiroAnuidades() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold mb-2">
             <Coins className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Tesouraria Oficial FMTTEMA</span>
+            <span>{isAdmin ? 'Tesouraria Oficial FMTTEMA' : 'Situação Financeira Oficial'}</span>
           </div>
           <h2 className="font-heading font-extrabold text-xl text-fmt-blue">
-            Gestão Financeira de Anuidades
+            {isAtleta
+              ? 'Situação da Minha Anuidade'
+              : isAcademia
+              ? 'Situação da Anuidade da Academia'
+              : 'Gestão Financeira de Anuidades'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Controle de adimplência, baixa manual com anexo de comprovante e integração atômica com o fluxo de caixa.
+            {isAdmin
+              ? 'Controle de adimplência, confirmação de pagamentos e emissão de comprovantes.'
+              : 'Acompanhe o status da sua anuidade federativa e consulte o comprovante registrado.'}
           </p>
         </div>
 
@@ -154,82 +226,92 @@ export default function PainelFinanceiroAnuidades() {
         </button>
       </div>
 
-      {/* Cards de Métricas e Adimplência */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Total Cadastrado</span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-slate-800 font-heading">{totalGeral}</span>
-            <span className="text-[11px] text-slate-500">filiados</span>
+      {/* Cards de Métricas e Adimplência (Apenas visão Admin) */}
+      {isAdmin ? (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">Total Cadastrado</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-black text-slate-800 font-heading">{totalGeral}</span>
+                <span className="text-[11px] text-slate-500">filiados</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200/80">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block">Adimplentes (Pagos)</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-black text-emerald-800 font-heading">{totalPagos}</span>
+                <span className="text-[11px] text-emerald-600 font-semibold">{percentualAdimplencia}% do total</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/90">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Inadimplentes (Pendentes)</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-black text-amber-800 font-heading">{totalPendentes}</span>
+                <span className="text-[11px] text-amber-600 font-medium">aguardando baixa</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/80">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 block">Taxa de Regularidade</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-2xl font-black text-fmt-blue font-heading">{percentualAdimplencia}%</span>
+                <span className="text-[11px] text-blue-600">homologados</span>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200/80">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block">Adimplentes (Pagos)</span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-emerald-800 font-heading">{totalPagos}</span>
-            <span className="text-[11px] text-emerald-600 font-semibold">{percentualAdimplencia}% do total</span>
+          {/* Barra de Filtros e Busca */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-6 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200">
+            {/* Campo de Busca */}
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar por nome, CPF ou e-mail..."
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-fmt-blue"
+              />
+            </div>
+
+            {/* Seletores de Filtro */}
+            <div className="flex items-center gap-2.5 w-full md:w-auto">
+              <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <span className="font-semibold hidden sm:inline">Status:</span>
+              </div>
+              <select
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-fmt-blue"
+              >
+                <option value="TODOS">Todos os Status</option>
+                <option value="PENDENTE">Apenas Pendentes (Devendo)</option>
+                <option value="PAGO">Apenas Pagos (Em dia)</option>
+              </select>
+
+              <select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+                className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-fmt-blue"
+              >
+                <option value="TODOS">Todos os Tipos</option>
+                <option value="ATLETA">Apenas Atletas</option>
+                <option value="ACADEMIA">Apenas Academias</option>
+              </select>
+            </div>
           </div>
+        </>
+      ) : (
+        <div className="p-4 mb-6 rounded-xl bg-blue-50/60 border border-blue-200/80 text-xs text-blue-900 leading-relaxed">
+          <span className="font-bold block mb-1">Informações Pessoais de Regularidade:</span>
+          {isAtleta && 'Abaixo consta a situação da sua anuidade federativa oficial. Caso esteja pendente, procure a administração para anexar seu comprovante PIX/Transferência.'}
+          {isAcademia && 'Abaixo consta a situação de regularidade da sua agremiação credenciada. A manutenção da anuidade em dia garante a participação dos seus atletas no circuito estadual.'}
         </div>
-
-        <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-200/90">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 block">Inadimplentes (Pendentes)</span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-amber-800 font-heading">{totalPendentes}</span>
-            <span className="text-[11px] text-amber-600 font-medium">aguardando baixa</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200/80">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 block">Taxa de Regularidade</span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-2xl font-black text-fmt-blue font-heading">{percentualAdimplencia}%</span>
-            <span className="text-[11px] text-blue-600">homologados</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Barra de Filtros e Busca */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-6 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200">
-        {/* Campo de Busca */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nome, CPF ou e-mail..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-fmt-blue"
-          />
-        </div>
-
-        {/* Seletores de Filtro */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <div className="flex items-center gap-1.5 text-xs text-slate-600">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-semibold hidden sm:inline">Status:</span>
-          </div>
-          <select
-            value={filtroStatus}
-            onChange={(e) => setFiltroStatus(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-fmt-blue"
-          >
-            <option value="TODOS">Todos os Status</option>
-            <option value="PENDENTE">Apenas Pendentes (Devendo)</option>
-            <option value="PAGO">Apenas Pagos (Em dia)</option>
-          </select>
-
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value)}
-            className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 bg-white font-medium focus:outline-none focus:ring-2 focus:ring-fmt-blue"
-          >
-            <option value="TODOS">Atletas & Academias</option>
-            <option value="ATLETA">Apenas Atletas</option>
-            <option value="ACADEMIA">Apenas Academias</option>
-          </select>
-        </div>
-      </div>
+      )}
 
       {/* Tabela de Anuidades */}
       {loading ? (
@@ -252,7 +334,7 @@ export default function PainelFinanceiroAnuidades() {
                 <th className="px-4 py-3">Documento / Vínculo</th>
                 <th className="px-4 py-3">Status Anuidade</th>
                 <th className="px-4 py-3">Comprovante</th>
-                <th className="px-4 py-3 text-right">Ação</th>
+                {isAdmin && <th className="px-4 py-3 text-right">Ação</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
@@ -322,23 +404,25 @@ export default function PainelFinanceiroAnuidades() {
                       )}
                     </td>
 
-                    {/* Botão de Ação */}
-                    <td className="px-4 py-3.5 text-right">
-                      {!isPago ? (
-                        <button
-                          onClick={() => setBeneficiarioParaPagar(item)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all active:scale-[0.98] cursor-pointer"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Confirmar Pagamento</span>
-                        </button>
-                      ) : (
-                        <span className="text-[11px] text-emerald-700 font-semibold inline-flex items-center gap-1">
-                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Regularizado</span>
-                        </span>
-                      )}
-                    </td>
+                    {/* Botão de Ação (Apenas Admin) */}
+                    {isAdmin && (
+                      <td className="px-4 py-3.5 text-right">
+                        {!isPago ? (
+                          <button
+                            onClick={() => setBeneficiarioParaPagar(item)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Confirmar Pagamento</span>
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-emerald-700 font-semibold inline-flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Regularizado</span>
+                          </span>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })}

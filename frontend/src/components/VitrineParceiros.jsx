@@ -252,7 +252,7 @@ export default function VitrineParceiros({ compact = false }) {
             <div>
               <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-fmt-red">
                 <Award className="w-3.5 h-3.5" />
-                <span>Vitrine Comercial Oficial</span>
+                <span>Apoio & Parcerias Oficiais</span>
               </div>
               <h3 className="font-heading font-extrabold text-base sm:text-lg text-fmt-blue leading-tight">
                 Patrocinadores e Parceiros Institucionais

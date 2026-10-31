@@ -4,7 +4,6 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
-import ChavesTorneio from './pages/ChavesTorneio';
 import RankingPublico from './pages/RankingPublico';
 
 function App() {
@@ -21,7 +20,8 @@ function App() {
           {/* Rotas protegidas pela Guarda de Rotas (PrivateRoute) */}
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chaves" element={<ChavesTorneio />} />
+            <Route path="/dashboard/:modulo" element={<Dashboard />} />
+            <Route path="/chaves" element={<Navigate to="/dashboard/torneios" replace />} />
           </Route>
 
           {/* Rota coringa - redireciona para a Home principal */}

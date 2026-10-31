@@ -2,12 +2,9 @@ import { useState, useEffect } from 'react';
 import { 
   Trophy, 
   Award, 
-  Flame, 
   TrendingUp, 
   Edit3, 
   UserCheck, 
-  Shield, 
-  Layers, 
   Users,
   RefreshCw,
   AlertCircle
@@ -64,25 +61,54 @@ export default function PerfilCartelAtleta() {
   const [modalAberto, setModalAberto] = useState(false);
   const [atletaParaEditar, setAtletaParaEditar] = useState(null);
 
-  const isTreinadorOuAdmin = user?.perfil === 'ADMIN' || user?.perfil === 'TREINADOR';
+  const perfil = user?.perfil || 'ADMIN';
+  const isAdmin = perfil === 'ADMIN';
+  const isTreinador = perfil === 'TREINADOR';
+  const isAcademia = perfil === 'ACADEMIA';
+  const isAtleta = perfil === 'ATLETA';
+  const podeEditarCartel = isAdmin || isTreinador;
 
   const carregarDados = async () => {
     setLoading(true);
     setErro(null);
 
     try {
-      if (user?.perfil === 'ATLETA') {
-        // Carrega o perfil do próprio atleta logado
+      if (isAtleta) {
+        // Atleta vê rigorosamente APENAS o seu próprio perfil e histórico pessoal
         const res = await api.get('/api/atletas/me');
         setAtleta(res.data);
+        setListaAtletas([]);
+      } else if (perfil === 'ARBITRO') {
+        // Árbitro oficial não gerencia fichas de atletas
+        setErro('Árbitros oficiais não possuem gestão de fichas de atletas. Acesse o módulo de Arbitragem ou Torneios.');
       } else {
-        // Se for Treinador ou Admin, carrega a lista para visualização e edição de qualquer atleta
         const res = await api.get('/api/atletas');
-        const atletas = res.data || [];
-        setListaAtletas(atletas);
-        if (atletas.length > 0) {
-          // Define o primeiro da lista como atleta em destaque (ex: Fellype Dylon)
-          setAtleta(atletas[0]);
+        const todosAtletas = res.data || [];
+
+        if (isAdmin) {
+          // Administrador estadual tem visão global de todos os atletas de todas as academias
+          setListaAtletas(todosAtletas);
+          if (todosAtletas.length > 0) {
+            setAtleta(todosAtletas[0]);
+          }
+        } else if (isTreinador || isAcademia) {
+          // Treinador e Academia enxergam EXCLUSIVAMENTE os atletas vinculados à sua própria agremiação
+          const academiaFiltro = user?.email?.includes('imperatriz')
+            ? 'Arena Tocantins Muaythai'
+            : 'Centro de Treinamento FMTTEMA';
+
+          const atletasMinhaAcademia = todosAtletas.filter(a =>
+            (a.academiaNome && a.academiaNome.toLowerCase().includes(academiaFiltro.toLowerCase())) ||
+            (a.email === user?.email)
+          );
+
+          setListaAtletas(atletasMinhaAcademia);
+          if (atletasMinhaAcademia.length > 0) {
+            setAtleta(atletasMinhaAcademia[0]);
+          } else {
+            setAtleta(null);
+            setErro('Nenhum atleta vinculado encontrado para a sua agremiação no momento.');
+          }
         }
       }
     } catch (err) {
@@ -195,9 +221,9 @@ export default function PerfilCartelAtleta() {
               </div>
             </div>
 
-            {/* Ação do Treinador: Botão de Edição */}
+            {/* Ação do Treinador / Admin: Botão de Edição */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              {isTreinadorOuAdmin && (
+              {podeEditarCartel && !isAtleta && (
                 <button
                   id="btn-editar-cartel"
                   onClick={() => abrirModalEdicao(atleta)}
@@ -341,11 +367,11 @@ export default function PerfilCartelAtleta() {
                 </div>
               </div>
 
-              {isTreinadorOuAdmin && (
+              {podeEditarCartel && !isAtleta && (
                 <div className="pt-4 border-t border-slate-200/80">
                   <button
                     onClick={() => abrirModalEdicao(atleta)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-fmt-blue" />
                     <span>Alterar Kruang do Aluno</span>
@@ -360,17 +386,23 @@ export default function PerfilCartelAtleta() {
 
       </div>
 
-      {/* Seção Adicional para Treinador / Admin: Seletor de Alunos/Atletas para Edição */}
-      {isTreinadorOuAdmin && listaAtletas.length > 1 && (
+      {/* Seção Adicional para Treinador / Admin / Academia: Seletor de Alunos/Atletas */}
+      {!isAtleta && listaAtletas.length > 1 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 text-left">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-fmt-blue" />
               <div>
                 <h3 className="font-heading font-bold text-sm text-fmt-blue">
-                  Alunos & Atletas Cadastrados ({listaAtletas.length})
+                  {isAdmin
+                    ? `Plantel Completo da Federação (${listaAtletas.length} atletas)`
+                    : `Atletas Vinculados à Minha Agremiação (${listaAtletas.length} atletas)`}
                 </h3>
-                <p className="text-xs text-slate-500">Selecione um atleta para visualizar e editar o cartel</p>
+                <p className="text-xs text-slate-500">
+                  {isAdmin
+                    ? 'Visão administrativa global de todos os atletas federados no Maranhão'
+                    : 'Acompanhamento exclusivo dos atletas vinculados à sua academia'}
+                </p>
               </div>
             </div>
           </div>
@@ -410,16 +442,18 @@ export default function PerfilCartelAtleta() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      abrirModalEdicao(atl);
-                    }}
-                    title="Editar cartel deste atleta"
-                    className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-fmt-blue hover:border-fmt-blue transition-colors shrink-0"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </button>
+                  {podeEditarCartel && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        abrirModalEdicao(atl);
+                      }}
+                      title="Editar cartel deste atleta"
+                      className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-fmt-blue hover:border-fmt-blue transition-colors shrink-0 cursor-pointer"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               );
             })}

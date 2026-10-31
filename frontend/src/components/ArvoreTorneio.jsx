@@ -27,7 +27,7 @@ export default function ArvoreTorneio({ eventoIdInicial = null }) {
   const [erro, setErro] = useState(null);
   const [sucessoMsg, setSucessoMsg] = useState(null);
 
-  const isAdminOuTreinador = user?.perfil === 'ADMIN' || user?.perfil === 'TREINADOR';
+  const isAdmin = user?.perfil === 'ADMIN';
 
   // Carrega lista de eventos
   useEffect(() => {
@@ -37,7 +37,8 @@ export default function ArvoreTorneio({ eventoIdInicial = null }) {
         const lista = res.data || [];
         setEventos(lista);
         if (lista.length > 0) {
-          const idInicial = eventoIdInicial || lista[0].id;
+          const eventoEmAndamento = lista.find(e => e.nome?.toLowerCase().includes('maranhense'));
+          const idInicial = eventoIdInicial || eventoEmAndamento?.id || lista[0].id;
           setEventoSelecionadoId(idInicial);
         } else {
           setLoading(false);
@@ -121,7 +122,7 @@ export default function ArvoreTorneio({ eventoIdInicial = null }) {
             Árvore do Torneio & Cruzamentos
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Algoritmo de eliminação simples com cabeças de chave por vitórias e aplicação automática do Bye.
+            Chaveamento oficial das categorias de peso e cruzamentos das rodadas eliminatórias.
           </p>
         </div>
 
@@ -146,8 +147,8 @@ export default function ArvoreTorneio({ eventoIdInicial = null }) {
             </select>
           </div>
 
-          {/* Botão Gerar Chaves (para Treinador e Admin) */}
-          {isAdminOuTreinador && (
+          {/* Botão Gerar Chaves (exclusivo para Administrador) */}
+          {isAdmin && (
             <div className="sm:self-end">
               <button
                 id="btn-gerar-chaves"
@@ -205,9 +206,11 @@ export default function ArvoreTorneio({ eventoIdInicial = null }) {
             Nenhuma Chave Gerada para Este Evento
           </h3>
           <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-            Certifique-se de que os atletas já foram inscritos e clique no botão abaixo para rodar o algoritmo de cruzamento ranqueado.
+            {isAdmin
+              ? 'Certifique-se de que os atletas já foram inscritos e clique no botão abaixo para sortear e publicar as chaves da primeira rodada.'
+              : 'O chaveamento oficial deste evento ainda não foi publicado pela comissão organizadora da FMTTEMA.'}
           </p>
-          {isAdminOuTreinador && (
+          {isAdmin && (
             <button
               onClick={handleGerarChaves}
               disabled={gerando}

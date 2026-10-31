@@ -1,76 +1,38 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import FmttemaLogo from './FmttemaLogo';
-import { LogOut, User, Shield, Trophy, LayoutDashboard, Medal, Calendar } from 'lucide-react';
+import { LogOut, User, Shield, Home } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const location = useLocation();
 
   return (
     <header className="bg-fmt-blue text-white shadow-md border-b-4 border-fmt-red sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
-        {/* Identidade Visual / Escudo + Links */}
-        <div className="flex items-center gap-6">
-          <Link to="/dashboard" className="cursor-pointer">
+        {/* Identidade Visual / Escudo */}
+        <div className="flex items-center gap-4">
+          <Link to="/dashboard" className="cursor-pointer" title="Ir para a Visão Geral do Painel">
             <FmttemaLogo size="md" light={true} />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1.5">
-            <Link
-              to="/dashboard"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
-                location.pathname === '/dashboard' || location.pathname === '/'
-                  ? 'bg-white/15 text-white shadow-sm'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Painel</span>
-            </Link>
-
-            <Link
-              to="/chaves"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
-                location.pathname === '/chaves'
-                  ? 'bg-white/15 text-white shadow-sm border border-yellow-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-              <span>Chaves de Luta</span>
-            </Link>
-
-            <Link
-              to="/ranking"
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold transition-all ${
-                location.pathname === '/ranking'
-                  ? 'bg-white/15 text-white shadow-sm border border-amber-400/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Medal className="w-3.5 h-3.5 text-amber-400" />
-              <span>Ranking Estadual</span>
-            </Link>
-
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all"
-            >
-              <Calendar className="w-3.5 h-3.5 text-fmt-red" />
-              <span>Vitrine & Eventos</span>
-            </Link>
-          </nav>
-        </div>
-
-        {/* Área do Usuário Autenticado & Ações */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Badge institucional */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-slate-200 text-xs border border-white/10 font-medium">
             <Shield className="w-3.5 h-3.5 text-fmt-red" />
             <span>Portal Esportivo Oficial</span>
           </div>
+        </div>
+
+        {/* Área do Usuário Autenticado & Ações */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Atalho para Página Inicial Pública */}
+          <Link
+            to="/"
+            title="Voltar à Página Inicial Pública"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/10 transition-all"
+          >
+            <Home className="w-3.5 h-3.5 text-fmt-red" />
+            <span className="hidden sm:inline">Página Inicial</span>
+          </Link>
 
           {/* Info do Usuário */}
           <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-black/20 border border-white/10">

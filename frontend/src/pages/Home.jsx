@@ -44,21 +44,12 @@ export default function Home() {
                 <span>Calendário & Ingressos</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => rolarParaSecao('vitrine-ranking-estadual')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-              >
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
-                <span>Ranking Estadual</span>
-              </button>
-
               <Link
                 to="/ranking"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-heading font-semibold text-slate-200 hover:text-white hover:bg-white/10 transition-all"
               >
-                <Award className="w-3.5 h-3.5 text-yellow-400" />
-                <span>Página de Ranking</span>
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                <span>Ranking Estadual</span>
               </Link>
             </nav>
           </div>
