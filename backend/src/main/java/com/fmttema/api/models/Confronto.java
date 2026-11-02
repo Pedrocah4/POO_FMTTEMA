@@ -79,6 +79,11 @@ public class Confronto implements Serializable {
         this.status = "AGENDADA";
     }
 
+    public Confronto(Evento evento, CategoriaPeso categoriaPeso, Atleta atletaVermelho, Atleta atletaAzul, String fase, Integer numeroLuta, Confronto proximoConfronto) {
+        this(evento, categoriaPeso, atletaVermelho, atletaAzul, fase, numeroLuta);
+        this.proximoConfronto = proximoConfronto;
+    }
+
     public Long getId() {
         return id;
     }

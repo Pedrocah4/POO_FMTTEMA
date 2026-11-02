@@ -11,3 +11,4 @@ public record RegistrarVencedorDTO(
         String metodoVitoria
 ) {
 }
+

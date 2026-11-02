@@ -408,6 +408,7 @@ public class DataInitializer implements CommandLineRunner {
             jdbcTemplate.execute("ALTER TABLE inscricoes DROP CONSTRAINT IF EXISTS inscricoes_status_check");
             jdbcTemplate.execute("ALTER TABLE eventos DROP CONSTRAINT IF EXISTS eventos_status_check");
             jdbcTemplate.execute("ALTER TABLE escalas_arbitros DROP CONSTRAINT IF EXISTS escalas_arbitros_status_presenca_check");
+            jdbcTemplate.execute("ALTER TABLE confrontos ALTER COLUMN atleta_vermelho_id DROP NOT NULL");
         } catch (Exception e) {
             System.out.println(">>> [FMTTEMA] Aviso ao atualizar constraints de enum: " + e.getMessage());
         }
