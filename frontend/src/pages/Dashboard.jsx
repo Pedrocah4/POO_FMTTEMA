@@ -14,6 +14,7 @@ import PainelComercialParceiros from '../components/PainelComercialParceiros';
 import TabelaRankingEstadual from '../components/TabelaRankingEstadual';
 import CalendarioEventosPublico from '../components/CalendarioEventosPublico';
 import ArvoreTorneio from '../components/ArvoreTorneio';
+import PainelInscricoesTorneio from '../components/PainelInscricoesTorneio';
 import {
   Menu,
   ShieldCheck,
@@ -26,7 +27,8 @@ import {
   UserCheck,
   Medal,
   Layers,
-  Swords
+  Swords,
+  Ticket
 } from 'lucide-react';
 
 // Mensagens e cabeçalhos customizados rigorosamente para cada nível de acesso (RBAC)
@@ -204,6 +206,19 @@ export default function Dashboard() {
                 </button>
                 <button
                   type="button"
+                  id="tab-inscricoes-torneios"
+                  onClick={() => setSubAbaTorneios('inscricoes')}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
+                    subAbaTorneios === 'inscricoes'
+                      ? 'bg-white text-fmt-blue shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Ticket className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Inscrições em Torneios</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => setSubAbaTorneios('calendario')}
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all cursor-pointer ${
                     subAbaTorneios === 'calendario'
@@ -217,11 +232,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {subAbaTorneios === 'chaves' ? (
-              <ArvoreTorneio />
-            ) : (
-              <CalendarioEventosPublico />
-            )}
+            {subAbaTorneios === 'chaves' && <ArvoreTorneio />}
+            {subAbaTorneios === 'inscricoes' && <PainelInscricoesTorneio />}
+            {subAbaTorneios === 'calendario' && <CalendarioEventosPublico />}
           </div>
         );
 
