@@ -277,3 +277,4 @@ export default function ModalSumulaLuta({ confronto, isOpen, onClose, onSuccess 
     </div>
   );
 }
+
