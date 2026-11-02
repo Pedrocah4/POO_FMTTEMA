@@ -1,11 +1,13 @@
 package com.fmttema.api.controllers;
 
 import com.fmttema.api.dto.ChaveamentoResponseDTO;
+import com.fmttema.api.dto.ConfrontoResponseDTO;
 import com.fmttema.api.dto.EventoRequestDTO;
 import com.fmttema.api.dto.EventoResponseDTO;
 import com.fmttema.api.dto.InscricaoRequestDTO;
 import com.fmttema.api.dto.InscricaoResponseDTO;
 import com.fmttema.api.exceptions.PagamentoPendenteException;
+import com.fmttema.api.services.ConfrontoService;
 import com.fmttema.api.services.EventoService;
 import com.fmttema.api.services.GeradorChavesService;
 import com.fmttema.api.services.InscricaoService;
@@ -32,15 +34,18 @@ public class EventoController {
     private final EventoService eventoService;
     private final InscricaoService inscricaoService;
     private final GeradorChavesService geradorChavesService;
+    private final ConfrontoService confrontoService;
 
     public EventoController(
             EventoService eventoService,
             InscricaoService inscricaoService,
-            GeradorChavesService geradorChavesService
+            GeradorChavesService geradorChavesService,
+            ConfrontoService confrontoService
     ) {
         this.eventoService = eventoService;
         this.inscricaoService = inscricaoService;
         this.geradorChavesService = geradorChavesService;
+        this.confrontoService = confrontoService;
     }
 
     @PostMapping
@@ -148,6 +153,44 @@ public class EventoController {
         try {
             ChaveamentoResponseDTO chaveamento = geradorChavesService.gerarChavesPorEvento(id);
             return ResponseEntity.ok(chaveamento);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Persiste os confrontos gerados pelo algoritmo de chaveamento e regra do Bye no banco de dados (US07.1).
+     */
+    @PostMapping("/{id}/chaves/persistir")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TREINADOR', 'ARBITRO')")
+    public ResponseEntity<?> persistirChaves(@PathVariable Long id) {
+        try {
+            List<ConfrontoResponseDTO> confrontos = confrontoService.persistirChavesEvento(id);
+            return ResponseEntity.status(HttpStatus.CREATED).body(confrontos);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "erro", "Não encontrado",
+                    "mensagem", e.getMessage()
+            ));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "erro", "Requisição inválida",
+                    "mensagem", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Lista todos os confrontos persistidos no banco de dados para um evento específico (US07.1).
+     */
+    @GetMapping("/{id}/confrontos")
+    public ResponseEntity<?> listarConfrontosPorEvento(@PathVariable Long id) {
+        try {
+            List<ConfrontoResponseDTO> confrontos = confrontoService.listarConfrontosPorEvento(id);
+            return ResponseEntity.ok(confrontos);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
                     "erro", "Não encontrado",
