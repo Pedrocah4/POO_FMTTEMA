@@ -21,3 +21,6 @@ backend/src/main/resources/application-*.yml
 .idea/
 .vscode/
 *.iml
+
+# Ferramentas e agentes de IA
+.agents/
