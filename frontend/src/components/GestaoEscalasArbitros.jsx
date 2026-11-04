@@ -77,7 +77,10 @@ export default function GestaoEscalasArbitros() {
   const handleConvocar = async (e) => {
     e.preventDefault();
     if (!formArbitroId || !eventoSelecionado) {
-      alert('Selecione um árbitro e um evento.');
+      setFeedback({
+        tipo: 'erro',
+        mensagem: 'Por favor, selecione um árbitro e um evento oficial para realizar a convocação.'
+      });
       return;
     }
 

@@ -132,6 +132,22 @@ export default function PainelInscricoesTorneio() {
   const statusPagamentoAtleta = atletaAtual?.statusPagamento || 'PENDENTE';
   const anuidadeRegularizada = statusPagamentoAtleta === 'PAGO';
 
+  // Validação preventiva de peso e categorias (CARD-14)
+  const categoriasEvento = eventoAtual?.categorias || [];
+  const pesoAtleta = atletaAtual?.peso ? Number(atletaAtual.peso) : null;
+  const pesoNaoCadastrado = !pesoAtleta || pesoAtleta <= 0;
+
+  const categoriaCompativel = (categoriasEvento.length > 0 && pesoAtleta)
+    ? [...categoriasEvento]
+        .filter(cat => cat.pesoMaximo != null && cat.pesoMaximo >= pesoAtleta)
+        .sort((a, b) => a.pesoMaximo - b.pesoMaximo)[0]
+    : null;
+
+  const pesoExcedeLimite = categoriasEvento.length > 0 && pesoAtleta != null && !categoriaCompativel;
+  const maxPesoEvento = categoriasEvento.length > 0
+    ? Math.max(...categoriasEvento.map(c => c.pesoMaximo || 0))
+    : null;
+
   // Verifica se o atleta já está inscrito neste evento
   const jaInscrito = inscricoesEvento.some(
     ins => ins.atletaId && atletaAtual?.id && String(ins.atletaId) === String(atletaAtual.id)
@@ -360,6 +376,36 @@ export default function PainelInscricoesTorneio() {
             </div>
           )}
 
+          {/* Alerta Preventivo de Incompatibilidade de Peso (CARD-14) */}
+          {pesoExcedeLimite && (
+            <div className="p-4 rounded-xl bg-amber-50 border-2 border-amber-300 text-amber-900 text-xs sm:text-sm flex items-start gap-3 shadow-sm">
+              <Scale className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <strong className="block font-heading font-black text-amber-800 uppercase tracking-wide">
+                  Atenção: Incompatibilidade de Peso com o Torneio
+                </strong>
+                <p>
+                  O peso registrado do atleta (<strong>{pesoAtleta} kg</strong>) excede o limite máximo de todas as categorias contempladas neste evento esportivo (teto de <strong>{maxPesoEvento} kg</strong>).
+                </p>
+                <p className="text-amber-700 text-xs">
+                  👉 Selecione um torneio que comporte a categoria de peso do atleta ou contate a federação para atualização do cartel.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {pesoNaoCadastrado && atletaAtual && (
+            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs sm:text-sm flex items-start gap-3">
+              <Scale className="w-5 h-5 text-fmt-blue shrink-0 mt-0.5" />
+              <div>
+                <strong className="block font-heading font-bold text-fmt-blue">
+                  Peso Corporal Não Registrado
+                </strong>
+                Este atleta não possui peso corporal homologado no perfil. O registro do peso é obrigatório para alocação nas categorias e chaves oficiais.
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Bloco Esquerdo: Escolha do Torneio */}
@@ -405,6 +451,34 @@ export default function PainelInscricoesTorneio() {
                       {eventoAtual.descricao}
                     </p>
                   )}
+
+                  {/* Badges de Categorias de Peso (CARD-14) */}
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 block mb-1.5">
+                      Categorias de Peso Aceitas:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {categoriasEvento.length > 0 ? (
+                        categoriasEvento.map((cat) => {
+                          const isCompativel = categoriaCompativel?.id === cat.id;
+                          return (
+                            <span
+                              key={cat.id || cat.nome}
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                                isCompativel
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                  : 'bg-slate-200/80 text-slate-700'
+                              }`}
+                            >
+                              {cat.nome} (até {cat.pesoMaximo} kg) {isCompativel ? '✓ Alocação do Atleta' : ''}
+                            </span>
+                          );
+                        })
+                      ) : (
+                        <span className="text-slate-400 italic">Todas as categorias homologadas</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -532,9 +606,9 @@ export default function PainelInscricoesTorneio() {
 
             <button
               type="submit"
-              disabled={enviando || jaInscrito || !anuidadeRegularizada || isFinalizado}
+              disabled={enviando || jaInscrito || !anuidadeRegularizada || isFinalizado || pesoExcedeLimite || pesoNaoCadastrado}
               className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-heading font-extrabold text-xs sm:text-sm uppercase tracking-wider transition-all shadow-md cursor-pointer ${
-                enviando || jaInscrito || !anuidadeRegularizada || isFinalizado
+                enviando || jaInscrito || !anuidadeRegularizada || isFinalizado || pesoExcedeLimite || pesoNaoCadastrado
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                   : 'bg-gradient-to-r from-fmt-red to-fmt-red-hover hover:from-red-600 hover:to-red-700 text-white hover:shadow-lg active:scale-[0.98]'
               }`}
@@ -558,6 +632,16 @@ export default function PainelInscricoesTorneio() {
                 <>
                   <ShieldAlert className="w-4 h-4 text-red-500" />
                   <span>Inscrição Bloqueada (Anuidade Pendente)</span>
+                </>
+              ) : pesoExcedeLimite ? (
+                <>
+                  <Scale className="w-4 h-4 text-amber-500" />
+                  <span>Peso Incompatível com o Torneio</span>
+                </>
+              ) : pesoNaoCadastrado ? (
+                <>
+                  <Scale className="w-4 h-4 text-slate-400" />
+                  <span>Peso Não Informado</span>
                 </>
               ) : (
                 <>

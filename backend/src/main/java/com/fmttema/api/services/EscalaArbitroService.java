@@ -80,8 +80,20 @@ public class EscalaArbitroService {
             throw new IllegalArgumentException("O usuário selecionado não possui perfil de Árbitro.");
         }
 
+        // Validação de licença e credenciamento ativo (CARD-12)
+        if (arbitro.getStatus() != StatusUsuario.ATIVO) {
+            throw new IllegalStateException("Apenas árbitros com credenciamento ATIVO podem ser convocados para eventos oficiais.");
+        }
+
         Evento evento = eventoRepository.findById(dto.eventoId())
                 .orElseThrow(() -> new EntityNotFoundException("Evento não encontrado com ID: " + dto.eventoId()));
+
+        if (arbitro.getDataValidadeLicenca() != null && evento.getData() != null && arbitro.getDataValidadeLicenca().isBefore(evento.getData())) {
+            throw new IllegalStateException(String.format("O árbitro %s possui licença federativa vencida (%s) para a data do torneio (%s).",
+                    arbitro.getNome() != null ? arbitro.getNome() : arbitro.getEmail(),
+                    arbitro.getDataValidadeLicenca(),
+                    evento.getData()));
+        }
 
         if (escalaArbitroRepository.existsByArbitroIdAndEventoId(dto.arbitroId(), dto.eventoId())) {
             throw new IllegalStateException("Este árbitro já está escalado para este evento.");

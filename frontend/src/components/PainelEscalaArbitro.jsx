@@ -18,6 +18,7 @@ export default function PainelEscalaArbitro() {
   const [atualizandoId, setAtualizandoId] = useState(null);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [erro, setErro] = useState('');
+  const [modalRecusaEscalaId, setModalRecusaEscalaId] = useState(null);
 
   const carregarMinhasEscalas = async () => {
     try {
@@ -58,10 +59,14 @@ export default function PainelEscalaArbitro() {
     }
   };
 
-  const recusarPresenca = async (escalaId) => {
-    if (!window.confirm('Tem certeza de que deseja informar impossibilidade de comparecimento neste evento?')) {
-      return;
-    }
+  const abrirModalRecusa = (escalaId) => {
+    setModalRecusaEscalaId(escalaId);
+  };
+
+  const confirmarRecusaPresenca = async () => {
+    if (!modalRecusaEscalaId) return;
+    const escalaId = modalRecusaEscalaId;
+    setModalRecusaEscalaId(null);
     try {
       setAtualizandoId(escalaId);
       setErro('');
@@ -260,7 +265,7 @@ export default function PainelEscalaArbitro() {
                       </button>
 
                       <button
-                        onClick={() => recusarPresenca(escala.id)}
+                        onClick={() => abrirModalRecusa(escala.id)}
                         disabled={emProcessamento}
                         className="inline-flex items-center justify-center gap-1 py-2 px-3 rounded-lg border border-slate-200 hover:border-rose-300 hover:bg-rose-50 text-slate-600 hover:text-rose-700 text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
                       >
@@ -275,7 +280,7 @@ export default function PainelEscalaArbitro() {
                       </span>
                       {isConfirmado ? (
                         <button
-                          onClick={() => recusarPresenca(escala.id)}
+                          onClick={() => abrirModalRecusa(escala.id)}
                           disabled={emProcessamento}
                           className="text-[11px] text-slate-400 hover:text-rose-600 underline cursor-pointer"
                         >
@@ -296,6 +301,48 @@ export default function PainelEscalaArbitro() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal Institucional de Confirmação FMTTEMA (CARD-19) */}
+      {modalRecusaEscalaId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-left">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-red-50 text-fmt-red">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Corpo de Arbitragem FMTTEMA
+                </span>
+                <h4 className="font-heading font-black text-lg text-slate-900">
+                  Informar Indisponibilidade
+                </h4>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Tem certeza de que deseja informar impossibilidade de comparecimento neste evento? A diretoria técnica da federação será comunicada para reescalar a função.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setModalRecusaEscalaId(null)}
+                className="px-4 py-2 text-xs font-heading font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={confirmarRecusaPresenca}
+                className="px-4 py-2 text-xs font-heading font-bold text-white bg-fmt-red hover:bg-red-700 rounded-xl transition-all cursor-pointer shadow-sm"
+              >
+                Confirmar Indisponibilidade
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

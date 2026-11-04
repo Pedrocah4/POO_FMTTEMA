@@ -131,7 +131,22 @@ export default function VitrineParceiros({ compact = false }) {
   }
 
   if (parceiros.length === 0) {
-    return null;
+    return (
+      <section className="py-8 bg-slate-50 border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-fmt-blue text-xs font-semibold uppercase tracking-wider mb-2">
+            <Handshake className="w-3.5 h-3.5" />
+            Parcerias Oficiais
+          </div>
+          <h3 className="font-heading font-black text-lg text-slate-800">
+            Sua Marca no Centro do Muaythai Maranhense
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-lg mx-auto">
+            Apoie o desenvolvimento de nossos atletas e competições estaduais. Seja um parceiro oficial da FMTTEMA.
+          </p>
+        </div>
+      </section>
+    );
   }
 
   // Calcula itens visíveis no carrossel (janela deslizante de até 3 itens em telas maiores)

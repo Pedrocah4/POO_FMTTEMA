@@ -147,7 +147,15 @@ export default function PerfilCartelAtleta() {
   }
 
   if (!atleta) {
-    return null;
+    return (
+      <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center my-6">
+        <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+        <h3 className="font-heading font-bold text-base text-slate-700">Nenhum Atleta Selecionado</h3>
+        <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+          Não há registros de atletas disponíveis para exibição no momento ou você ainda não possui atletas vinculados à sua conta.
+        </p>
+      </div>
+    );
   }
 
   const vitorias = atleta.vitorias || 0;
