@@ -1,5 +1,6 @@
 package com.fmttema.api.controllers;
 
+import com.fmttema.api.dto.ArbitroResponseDTO;
 import com.fmttema.api.dto.EscalaArbitroRequestDTO;
 import com.fmttema.api.dto.EscalaArbitroResponseDTO;
 import com.fmttema.api.models.PerfilAcesso;
@@ -162,9 +163,10 @@ public class ArbitroController {
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> listarArbitros() {
-        List<Usuario> arbitros = usuarioRepository.findAll().stream()
+    public ResponseEntity<List<ArbitroResponseDTO>> listarArbitros() {
+        List<ArbitroResponseDTO> arbitros = usuarioRepository.findAll().stream()
                 .filter(u -> u.getPerfil() == PerfilAcesso.ARBITRO)
+                .map(ArbitroResponseDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(arbitros);
     }

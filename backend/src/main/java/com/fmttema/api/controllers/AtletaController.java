@@ -57,59 +57,8 @@ public class AtletaController {
     }
 
     @PostMapping
-    public ResponseEntity<?> cadastrarAtleta(@RequestBody @Valid AtletaRequestDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.email())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "erro", "Requisição inválida",
-                    "mensagem", "O e-mail informado já está cadastrado"
-            ));
-        }
-
-        if (atletaRepository.existsByCpf(dto.cpf())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "erro", "Requisição inválida",
-                    "mensagem", "O CPF informado já está cadastrado"
-            ));
-        }
-
-        Academia academia = null;
-        if (dto.academiaId() != null) {
-            Optional<Academia> academiaOpt = academiaRepository.findById(dto.academiaId());
-            if (academiaOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                        "erro", "Requisição inválida",
-                        "mensagem", "Academia vinculada não encontrada para o ID informado"
-                ));
-            }
-            academia = academiaOpt.get();
-        }
-
-        String senhaCriptografada = passwordEncoder.encode(dto.senha());
-
-        // Força status interno para PENDENTE_APROVACAO
-        Usuario usuario = new Usuario(
-                dto.email(),
-                senhaCriptografada,
-                PerfilAcesso.ATLETA,
-                StatusUsuario.PENDENTE_APROVACAO
-        );
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-
-        Atleta atleta = new Atleta();
-        atleta.setNome(dto.nome());
-        atleta.setApelido(dto.apelido());
-        atleta.setCpf(dto.cpf());
-        atleta.setDataNascimento(dto.dataNascimento());
-        atleta.setPeso(dto.peso());
-        atleta.setCategoria(dto.categoria());
-        atleta.setGraduacao(dto.graduacao());
-        atleta.setKruang(dto.graduacao());
-        atleta.setUsuario(usuarioSalvo);
-        atleta.setAcademia(academia);
-
-        Atleta atletaSalvo = atletaRepository.save(atleta);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(AtletaResponseDTO.fromEntity(atletaSalvo));
+    public ResponseEntity<AtletaResponseDTO> cadastrarAtleta(@RequestBody @Valid AtletaRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(atletaService.cadastrarAtleta(dto));
     }
 
     @PatchMapping("/{id}/cartel")
@@ -130,8 +79,16 @@ public class AtletaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AtletaResponseDTO>> listarTodos() {
         return ResponseEntity.ok(atletaService.listarTodos());
+    }
+
+    @GetMapping("/minha-equipe")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TREINADOR', 'ACADEMIA', 'ATLETA')")
+    public ResponseEntity<List<AtletaResponseDTO>> listarMinhaEquipe(Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(atletaService.listarMinhaEquipe(email));
     }
 
     @GetMapping("/me")

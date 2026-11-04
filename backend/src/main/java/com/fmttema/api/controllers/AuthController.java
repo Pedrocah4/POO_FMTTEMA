@@ -3,6 +3,7 @@ package com.fmttema.api.controllers;
 import com.fmttema.api.dto.LoginRequestDTO;
 import com.fmttema.api.dto.LoginResponseDTO;
 import com.fmttema.api.dto.RegisterRequestDTO;
+import com.fmttema.api.models.PerfilAcesso;
 import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.UsuarioRepository;
 import com.fmttema.api.security.TokenService;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -52,6 +54,11 @@ public class AuthController {
             String token = tokenService.gerarToken(usuario);
 
             return ResponseEntity.ok(new LoginResponseDTO(token, usuario.getEmail(), usuario.getPerfil()));
+        } catch (DisabledException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "erro", "Conta inativa ou pendente",
+                    "mensagem", "Sua conta está com credenciamento pendente de aprovação ou inativa. Aguarde a validação da Federação."
+            ));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
                     "erro", "Não autorizado",
@@ -66,6 +73,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "erro", "Requisição inválida",
                     "mensagem", "O e-mail informado já está cadastrado"
+            ));
+        }
+
+        // Validação de segurança: Impede o autocadastro público com perfil ADMIN ou ARBITRO
+        if (dto.perfil() == PerfilAcesso.ADMIN || dto.perfil() == PerfilAcesso.ARBITRO) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "erro", "Acesso não autorizado",
+                    "mensagem", "Não é permitido o autocadastro público com perfis institucionais de Administrador ou Árbitro."
             ));
         }
 

@@ -18,6 +18,9 @@ public interface AcademiaRepository extends JpaRepository<Academia, Long> {
     boolean existsByCnpj(String cnpj);
     Optional<Academia> findByUsuarioId(Long usuarioId);
 
+    @Query("SELECT a FROM Academia a WHERE a.usuario.email = :email")
+    Optional<Academia> findByUsuarioEmail(@Param("email") String email);
+
     @Query("SELECT a FROM Academia a LEFT JOIN FETCH a.usuario")
     List<Academia> findAllComUsuario();
 

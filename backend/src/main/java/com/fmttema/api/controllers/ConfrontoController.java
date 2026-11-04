@@ -62,11 +62,7 @@ public class ConfrontoController {
      */
     @GetMapping("/evento/{eventoId}")
     public ResponseEntity<List<ConfrontoResponseDTO>> listarConfrontosPorEvento(@PathVariable Long eventoId) {
-        try {
-            return ResponseEntity.ok(confrontoService.listarConfrontosPorEvento(eventoId));
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(List.of());
-        }
+        return ResponseEntity.ok(confrontoService.listarConfrontosPorEvento(eventoId));
     }
 }
 
