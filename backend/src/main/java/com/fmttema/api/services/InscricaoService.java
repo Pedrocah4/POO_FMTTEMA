@@ -3,17 +3,10 @@ package com.fmttema.api.services;
 import com.fmttema.api.dto.InscricaoRequestDTO;
 import com.fmttema.api.dto.InscricaoResponseDTO;
 import com.fmttema.api.exceptions.PagamentoPendenteException;
-import com.fmttema.api.models.Atleta;
-import com.fmttema.api.models.CategoriaPeso;
-import com.fmttema.api.models.Evento;
-import com.fmttema.api.models.Inscricao;
-import com.fmttema.api.models.StatusEvento;
-import com.fmttema.api.models.StatusPagamento;
-import com.fmttema.api.repositories.AtletaRepository;
-import com.fmttema.api.repositories.CategoriaPesoRepository;
-import com.fmttema.api.repositories.EventoRepository;
-import com.fmttema.api.repositories.InscricaoRepository;
+import com.fmttema.api.models.*;
+import com.fmttema.api.repositories.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,23 +20,30 @@ public class InscricaoService {
     private final EventoRepository eventoRepository;
     private final AtletaRepository atletaRepository;
     private final CategoriaPesoRepository categoriaPesoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final AcademiaRepository academiaRepository;
 
     public InscricaoService(
             InscricaoRepository inscricaoRepository,
             EventoRepository eventoRepository,
             AtletaRepository atletaRepository,
-            CategoriaPesoRepository categoriaPesoRepository
+            CategoriaPesoRepository categoriaPesoRepository,
+            UsuarioRepository usuarioRepository,
+            AcademiaRepository academiaRepository
     ) {
         this.inscricaoRepository = inscricaoRepository;
         this.eventoRepository = eventoRepository;
         this.atletaRepository = atletaRepository;
         this.categoriaPesoRepository = categoriaPesoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.academiaRepository = academiaRepository;
     }
 
     /**
      * Realiza a inscrição de um atleta em um evento com validação estrita de pagamento e peso.
      * Regra 1: Bloqueia (403 Forbidden) se o status_pagamento do atleta estiver pendente.
      * Regra 2: Vincula automaticamente o atleta à categoria correta lendo o peso do perfil.
+     * Regra 3: Proteção contra IDOR (CARD-09).
      */
     @Transactional
     public InscricaoResponseDTO inscreverAtleta(Long eventoId, InscricaoRequestDTO dto, String emailUsuarioAutenticado) {
@@ -55,23 +55,64 @@ public class InscricaoService {
             throw new IllegalStateException("Não é possível realizar inscrições em um evento já finalizado.");
         }
 
-        // 2. Localiza o Atleta (via DTO atletaId ou pelo e-mail do usuário autenticado)
+        // 2. Localiza e valida o Atleta com proteção IDOR (CARD-09)
         Atleta atleta;
-        if (dto != null && dto.atletaId() != null) {
+        if (emailUsuarioAutenticado != null && !emailUsuarioAutenticado.isBlank()) {
+            Usuario operador = usuarioRepository.findByEmail(emailUsuarioAutenticado).orElse(null);
+            if (operador != null) {
+                if (operador.getPerfil() == PerfilAcesso.ATLETA) {
+                    atleta = atletaRepository.findByUsuarioEmail(emailUsuarioAutenticado)
+                            .orElseThrow(() -> new EntityNotFoundException("Perfil de atleta não encontrado para o usuário: " + emailUsuarioAutenticado));
+                    if (dto != null && dto.atletaId() != null && !atleta.getId().equals(dto.atletaId())) {
+                        throw new AccessDeniedException("Você só tem permissão para realizar inscrições do seu próprio perfil de atleta.");
+                    }
+                } else if (operador.getPerfil() == PerfilAcesso.TREINADOR || operador.getPerfil() == PerfilAcesso.ACADEMIA) {
+                    if (dto == null || dto.atletaId() == null) {
+                        throw new IllegalArgumentException("Identificação do atleta ausente na requisição.");
+                    }
+                    atleta = atletaRepository.findById(dto.atletaId())
+                            .or(() -> atletaRepository.findByUsuarioId(dto.atletaId()))
+                            .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID informado: " + dto.atletaId()));
+
+                    Academia academiaOperador = academiaRepository.findByUsuarioEmail(emailUsuarioAutenticado)
+                            .or(() -> academiaRepository.findByUsuarioId(operador.getId()))
+                            .orElse(null);
+
+                    if (academiaOperador != null && (atleta.getAcademia() == null || !atleta.getAcademia().getId().equals(academiaOperador.getId()))) {
+                        throw new AccessDeniedException("Você só tem permissão para inscrever atletas vinculados à sua própria academia.");
+                    }
+                } else {
+                    if (dto != null && dto.atletaId() != null) {
+                        atleta = atletaRepository.findById(dto.atletaId())
+                                .or(() -> atletaRepository.findByUsuarioId(dto.atletaId()))
+                                .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID informado: " + dto.atletaId()));
+                    } else {
+                        atleta = atletaRepository.findByUsuarioEmail(emailUsuarioAutenticado)
+                                .orElseThrow(() -> new EntityNotFoundException("Nenhum atleta vinculado ao usuário: " + emailUsuarioAutenticado));
+                    }
+                }
+            } else {
+                throw new AccessDeniedException("Usuário autenticado não encontrado no sistema.");
+            }
+        } else if (dto != null && dto.atletaId() != null) {
             atleta = atletaRepository.findById(dto.atletaId())
                     .or(() -> atletaRepository.findByUsuarioId(dto.atletaId()))
                     .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado com o ID informado: " + dto.atletaId()));
-        } else if (emailUsuarioAutenticado != null && !emailUsuarioAutenticado.isBlank()) {
-            atleta = atletaRepository.findByUsuarioEmail(emailUsuarioAutenticado)
-                    .orElseThrow(() -> new EntityNotFoundException("Nenhum atleta vinculado ao usuário autenticado: " + emailUsuarioAutenticado));
         } else {
             throw new IllegalArgumentException("Identificação do atleta ausente na requisição.");
         }
 
-        // 3. Regra de Negócio 1: Bloquear se o status_pagamento estiver pendente
+        // 3. Regra de Negócio 1: Bloquear se o status_pagamento do atleta estiver pendente
         if (atleta.getStatusPagamento() == null || atleta.getStatusPagamento() == StatusPagamento.PENDENTE) {
             throw new PagamentoPendenteException(
                     "Inscrição negada: O atleta " + atleta.getNome() + " possui pendências na anuidade/pagamento. Regularize o status_pagamento para prosseguir."
+            );
+        }
+
+        // 3.1. Regra de Negócio: Bloquear se a academia filiada estiver com anuidade pendente (CARD-13)
+        if (atleta.getAcademia() != null && atleta.getAcademia().getStatusPagamento() == StatusPagamento.PENDENTE) {
+            throw new PagamentoPendenteException(
+                    "Inscrição negada: A agremiação " + atleta.getAcademia().getNome() + " possui pendências na anuidade institucional federativa."
             );
         }
 

@@ -8,9 +8,12 @@ import com.fmttema.api.models.StatusUsuario;
 import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.AcademiaRepository;
 import com.fmttema.api.repositories.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,5 +83,17 @@ public class AcademiaController {
                 .map(AcademiaResponseDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/me")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ACADEMIA', 'ADMIN')")
+    public ResponseEntity<AcademiaResponseDTO> obterMinhaAcademia(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new EntityNotFoundException("Usuário não autenticado");
+        }
+        Academia academia = academiaRepository.findByUsuarioEmail(authentication.getName())
+                .orElseThrow(() -> new EntityNotFoundException("Perfil de agremiação não encontrado para o usuário logado: " + authentication.getName()));
+        return ResponseEntity.ok(AcademiaResponseDTO.fromEntity(academia));
     }
 }

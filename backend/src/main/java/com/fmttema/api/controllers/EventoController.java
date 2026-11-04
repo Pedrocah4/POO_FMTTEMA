@@ -165,7 +165,7 @@ public class EventoController {
      * Persiste os confrontos gerados pelo algoritmo de chaveamento e regra do Bye no banco de dados (US07.1).
      */
     @PostMapping("/{id}/chaves/persistir")
-    @PreAuthorize("hasAnyRole('ADMIN', 'TREINADOR', 'ARBITRO')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> persistirChaves(@PathVariable Long id) {
         try {
             List<ConfrontoResponseDTO> confrontos = confrontoService.persistirChavesEvento(id);

@@ -182,6 +182,53 @@ public class FinanceiroService {
     }
 
     /**
+     * Retorna a anuidade correspondente ao usuário logado (ACADEMIA ou ATLETA) (CARD-05).
+     */
+    @Transactional(readOnly = true)
+    public List<AnuidadeDTO> buscarMinhaAnuidade(String email) {
+        if (email == null || email.isBlank()) {
+            return List.of();
+        }
+
+        List<AnuidadeDTO> lista = new ArrayList<>();
+
+        Optional<Academia> academiaOpt = academiaRepository.findByUsuarioEmail(email);
+        if (academiaOpt.isPresent()) {
+            Academia ac = academiaOpt.get();
+            lista.add(new AnuidadeDTO(
+                    ac.getId(),
+                    "ACADEMIA",
+                    ac.getNome(),
+                    (ac.getCnpj() != null ? ac.getCnpj() : ac.getCidade() + " / " + ac.getTelefone()),
+                    email,
+                    ac.getStatusPagamento(),
+                    ac.getComprovantePagamento(),
+                    ac.getResponsavel()
+            ));
+            return lista;
+        }
+
+        Optional<Atleta> atletaOpt = atletaRepository.findByUsuarioEmail(email);
+        if (atletaOpt.isPresent()) {
+            Atleta a = atletaOpt.get();
+            String acadNome = (a.getAcademia() != null) ? a.getAcademia().getNome() : "Sem vínculo";
+            lista.add(new AnuidadeDTO(
+                    a.getId(),
+                    "ATLETA",
+                    a.getNome(),
+                    a.getCpf(),
+                    email,
+                    a.getStatusPagamento(),
+                    a.getComprovantePagamento(),
+                    acadNome
+            ));
+            return lista;
+        }
+
+        return lista;
+    }
+
+    /**
      * Lista o histórico do fluxo de caixa ordenado do mais recente para o mais antigo.
      */
     @Transactional(readOnly = true)

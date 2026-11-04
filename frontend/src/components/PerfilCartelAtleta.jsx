@@ -82,31 +82,17 @@ export default function PerfilCartelAtleta() {
         // Árbitro oficial não gerencia fichas de atletas
         setErro('Árbitros oficiais não possuem gestão de fichas de atletas. Acesse o módulo de Arbitragem ou Torneios.');
       } else {
-        const res = await api.get('/api/atletas');
-        const todosAtletas = res.data || [];
+        // ADMIN consulta todos; TREINADOR e ACADEMIA consultam apenas a própria equipe via backend (CARD-06)
+        const endpoint = isAdmin ? '/api/atletas' : '/api/atletas/minha-equipe';
+        const res = await api.get(endpoint);
+        const atletas = res.data || [];
 
-        if (isAdmin) {
-          // Administrador estadual tem visão global de todos os atletas de todas as academias
-          setListaAtletas(todosAtletas);
-          if (todosAtletas.length > 0) {
-            setAtleta(todosAtletas[0]);
-          }
-        } else if (isTreinador || isAcademia) {
-          // Treinador e Academia enxergam EXCLUSIVAMENTE os atletas vinculados à sua própria agremiação
-          const academiaFiltro = user?.email?.includes('imperatriz')
-            ? 'Arena Tocantins Muaythai'
-            : 'Centro de Treinamento FMTTEMA';
-
-          const atletasMinhaAcademia = todosAtletas.filter(a =>
-            (a.academiaNome && a.academiaNome.toLowerCase().includes(academiaFiltro.toLowerCase())) ||
-            (a.email === user?.email)
-          );
-
-          setListaAtletas(atletasMinhaAcademia);
-          if (atletasMinhaAcademia.length > 0) {
-            setAtleta(atletasMinhaAcademia[0]);
-          } else {
-            setAtleta(null);
+        setListaAtletas(atletas);
+        if (atletas.length > 0) {
+          setAtleta(atletas[0]);
+        } else {
+          setAtleta(null);
+          if (isTreinador || isAcademia) {
             setErro('Nenhum atleta vinculado encontrado para a sua agremiação no momento.');
           }
         }

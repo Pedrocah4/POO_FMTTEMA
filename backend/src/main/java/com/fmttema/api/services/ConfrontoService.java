@@ -9,11 +9,16 @@ import com.fmttema.api.models.Atleta;
 import com.fmttema.api.models.CategoriaPeso;
 import com.fmttema.api.models.Confronto;
 import com.fmttema.api.models.Evento;
+import com.fmttema.api.models.PerfilAcesso;
+import com.fmttema.api.models.Usuario;
 import com.fmttema.api.repositories.AtletaRepository;
 import com.fmttema.api.repositories.CategoriaPesoRepository;
 import com.fmttema.api.repositories.ConfrontoRepository;
+import com.fmttema.api.repositories.EscalaArbitroRepository;
 import com.fmttema.api.repositories.EventoRepository;
+import com.fmttema.api.repositories.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,19 +34,25 @@ public class ConfrontoService {
     private final AtletaRepository atletaRepository;
     private final CategoriaPesoRepository categoriaPesoRepository;
     private final GeradorChavesService geradorChavesService;
+    private final UsuarioRepository usuarioRepository;
+    private final EscalaArbitroRepository escalaArbitroRepository;
 
     public ConfrontoService(
             ConfrontoRepository confrontoRepository,
             EventoRepository eventoRepository,
             AtletaRepository atletaRepository,
             CategoriaPesoRepository categoriaPesoRepository,
-            GeradorChavesService geradorChavesService
+            GeradorChavesService geradorChavesService,
+            UsuarioRepository usuarioRepository,
+            EscalaArbitroRepository escalaArbitroRepository
     ) {
         this.confrontoRepository = confrontoRepository;
         this.eventoRepository = eventoRepository;
         this.atletaRepository = atletaRepository;
         this.categoriaPesoRepository = categoriaPesoRepository;
         this.geradorChavesService = geradorChavesService;
+        this.usuarioRepository = usuarioRepository;
+        this.escalaArbitroRepository = escalaArbitroRepository;
     }
 
     /**
@@ -154,6 +165,17 @@ public class ConfrontoService {
 
         if ("FINALIZADA".equalsIgnoreCase(confronto.getStatus())) {
             throw new IllegalStateException("Este confronto já foi finalizado. O resultado oficial já consta na súmula.");
+        }
+
+        // Validação de integridade de arbitragem (CARD-10)
+        if (emailOperador != null && !emailOperador.isBlank()) {
+            Usuario operador = usuarioRepository.findByEmail(emailOperador).orElse(null);
+            if (operador != null && operador.getPerfil() == PerfilAcesso.ARBITRO) {
+                Long eventoId = confronto.getEvento() != null ? confronto.getEvento().getId() : null;
+                if (eventoId != null && !escalaArbitroRepository.existsByArbitroIdAndEventoId(operador.getId(), eventoId)) {
+                    throw new AccessDeniedException("Você só possui permissão para lançar súmulas em eventos nos quais está oficialmente escalado.");
+                }
+            }
         }
 
         Atleta vencedor = atletaRepository.findById(dto.vencedorId())

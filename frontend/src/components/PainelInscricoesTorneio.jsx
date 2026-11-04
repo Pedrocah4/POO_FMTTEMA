@@ -75,31 +75,14 @@ export default function PainelInscricoesTorneio() {
             setErro('Não foi possível identificar o perfil de atleta vinculado ao seu usuário.');
           }
         } else {
-          // Se for TREINADOR, ADMIN ou ACADEMIA, carrega lista de atletas
+          // Se for TREINADOR, ADMIN ou ACADEMIA, carrega lista de atletas (CARD-06)
           try {
-            const resAtletas = await api.get('/api/atletas');
-            const todos = resAtletas.data || [];
-
-            if (isTreinador) {
-              // Treinador vê apenas atletas da sua agremiação
-              const academiaFiltro = user?.email?.includes('imperatriz')
-                ? 'Arena Tocantins Muaythai'
-                : 'Centro de Treinamento FMTTEMA';
-
-              const atletasMinhaEquipe = todos.filter(a =>
-                (a.academiaNome && a.academiaNome.toLowerCase().includes(academiaFiltro.toLowerCase())) ||
-                (a.email === user?.email)
-              );
-              setListaAtletas(atletasMinhaEquipe);
-              if (atletasMinhaEquipe.length > 0) {
-                setAtletaSelecionadoId(String(atletasMinhaEquipe[0].id));
-              }
-            } else {
-              // Admin vê todos
-              setListaAtletas(todos);
-              if (todos.length > 0) {
-                setAtletaSelecionadoId(String(todos[0].id));
-              }
+            const endpointAtletas = isAdmin ? '/api/atletas' : '/api/atletas/minha-equipe';
+            const resAtletas = await api.get(endpointAtletas);
+            const atletas = resAtletas.data || [];
+            setListaAtletas(atletas);
+            if (atletas.length > 0) {
+              setAtletaSelecionadoId(String(atletas[0].id));
             }
           } catch (errAtl) {
             console.error('Erro ao carregar lista de atletas:', errAtl);

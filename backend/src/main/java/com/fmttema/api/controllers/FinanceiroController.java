@@ -23,7 +23,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/financeiro")
-@PreAuthorize("hasRole('ADMIN')")
 public class FinanceiroController {
 
     private final FinanceiroService financeiroService;
@@ -38,6 +37,7 @@ public class FinanceiroController {
      * Realiza a baixa manual da anuidade com registro obrigatório de comprovante e lançamento em fluxo de caixa.
      */
     @PatchMapping("/anuidades/{id}/pagar")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> darBaixaManual(
             @PathVariable Long id,
             @RequestBody @Valid BaixaAnuidadeRequestDTO dto,
@@ -62,19 +62,32 @@ public class FinanceiroController {
     }
 
     /**
-     * Lista todas as anuidades de atletas e academias para o painel financeiro.
+     * Lista todas as anuidades de atletas e academias para o painel financeiro (Admin).
      * GET /api/financeiro/anuidades
      */
     @GetMapping("/anuidades")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AnuidadeDTO>> listarAnuidades() {
         return ResponseEntity.ok(financeiroService.listarTodasAnuidades());
     }
 
     /**
-     * Lista o extrato completo de lançamentos no fluxo de caixa.
+     * Retorna a anuidade individual ou da agremiação do usuário autenticado (CARD-05).
+     * GET /api/financeiro/anuidades/me
+     */
+    @GetMapping("/anuidades/me")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIA', 'ATLETA')")
+    public ResponseEntity<List<AnuidadeDTO>> buscarMinhaAnuidade(Authentication authentication) {
+        String email = authentication != null ? authentication.getName() : null;
+        return ResponseEntity.ok(financeiroService.buscarMinhaAnuidade(email));
+    }
+
+    /**
+     * Lista o extrato completo de lançamentos no fluxo de caixa (Admin).
      * GET /api/financeiro/fluxo-caixa
      */
     @GetMapping("/fluxo-caixa")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FluxoCaixaResponseDTO>> listarFluxoCaixa() {
         return ResponseEntity.ok(financeiroService.listarFluxoCaixa());
     }

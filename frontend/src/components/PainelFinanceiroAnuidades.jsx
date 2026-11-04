@@ -49,48 +49,12 @@ export default function PainelFinanceiroAnuidades() {
   const carregarAnuidades = async () => {
     try {
       setLoading(true);
-      if (isAtleta) {
-        const res = await api.get('/api/atletas/me');
-        const atl = res.data;
-        if (atl) {
-          setAnuidades([
-            {
-              id: atl.id,
-              nome: atl.nome,
-              tipo: 'ATLETA',
-              documento: atl.cpf || atl.academiaNome || '-',
-              academiaNome: atl.academiaNome,
-              email: atl.email || user?.email,
-              statusPagamento: atl.statusPagamento || 'PENDENTE',
-              comprovante: atl.comprovantePagamento || 'https://comprovantes.fmttema.com/2026/pix_anuidade_atleta.pdf'
-            }
-          ]);
-        }
-        return;
-      }
-
-      try {
+      if (isAdmin) {
         const response = await api.get('/api/financeiro/anuidades');
         setAnuidades(response.data || []);
-      } catch (errAnuidades) {
-        if (isAcademia) {
-          // Fallback caso o backend restrinja /api/financeiro/anuidades apenas ao Admin
-          setAnuidades([
-            {
-              id: 1,
-              nome: user?.email?.includes('imperatriz')
-                ? 'Arena Tocantins Muaythai'
-                : 'Centro de Treinamento FMTTEMA',
-              tipo: 'ACADEMIA',
-              documento: '12.345.678/0001-01',
-              email: user?.email || 'academia@fmttema.com',
-              statusPagamento: 'PAGO',
-              comprovante: 'https://comprovantes.fmttema.com/2026/anuidade_ct_fmttema_pix.pdf'
-            }
-          ]);
-        } else {
-          throw errAnuidades;
-        }
+      } else {
+        const response = await api.get('/api/financeiro/anuidades/me');
+        setAnuidades(response.data || []);
       }
     } catch (err) {
       console.error('Erro ao carregar anuidades:', err);
@@ -134,22 +98,11 @@ export default function PainelFinanceiroAnuidades() {
   const totalPendentes = anuidades.filter((a) => a.statusPagamento === 'PENDENTE').length;
   const percentualAdimplencia = totalGeral > 0 ? Math.round((totalPagos / totalGeral) * 100) : 0;
 
-  // Filtragem Dinâmica e Isolamento de Dados por Perfil (RBAC)
+  // Filtragem Dinâmica e Isolamento de Dados por Perfil (RBAC - CARD-05 & CARD-06)
   const anuidadesPermitidas = anuidades.filter((item) => {
     if (isAdmin) return true;
-    if (isAtleta) {
-      return item.tipo === 'ATLETA' && (
-        anuidades.length === 1 ||
-        (item.email && user?.email && item.email.toLowerCase() === user.email.toLowerCase())
-      );
-    }
-    if (isAcademia) {
-      return item.tipo === 'ACADEMIA' && (
-        anuidades.length === 1 ||
-        (item.email && user?.email && item.email.toLowerCase() === user.email.toLowerCase()) ||
-        (item.nome && item.nome.toLowerCase().includes('centro de treinamento'))
-      );
-    }
+    if (isAtleta) return item.tipo === 'ATLETA';
+    if (isAcademia) return item.tipo === 'ACADEMIA';
     return false;
   });
 
