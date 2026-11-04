@@ -3,7 +3,8 @@ import { X, CheckCircle, Upload, Link as LinkIcon, DollarSign, FileText, AlertCi
 import api from '../services/api';
 
 export default function ModalBaixaAnuidade({ beneficiario, onClose, onSuccess, onError }) {
-  const [comprovante, setComprovante] = useState('');
+  const [comprovante, setComprovante] = useState(beneficiario?.comprovante || '');
+  const [arquivoLocal, setArquivoLocal] = useState(null);
   const [valor, setValor] = useState(beneficiario?.tipo === 'ACADEMIA' ? 300.0 : 150.0);
   const [observacoes, setObservacoes] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -14,15 +15,19 @@ export default function ModalBaixaAnuidade({ beneficiario, onClose, onSuccess, o
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Cria um link local ou usa o nome do arquivo com timestamp para simulação realista
-      const nomeSimulado = `comprovantes/${beneficiario.tipo.toLowerCase()}_${beneficiario.id}_${Date.now()}_${file.name}`;
-      setComprovante(nomeSimulado);
+      setArquivoLocal(file);
+      setComprovante(file.name);
     }
+  };
+
+  const handleRemoverArquivo = () => {
+    setArquivoLocal(null);
+    setComprovante(beneficiario?.comprovante || '');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!comprovante || comprovante.trim() === '') {
+    if (!arquivoLocal && (!comprovante || comprovante.trim() === '')) {
       setFormErro('O link ou anexo do comprovante de pagamento é obrigatório.');
       return;
     }
@@ -31,8 +36,21 @@ export default function ModalBaixaAnuidade({ beneficiario, onClose, onSuccess, o
       setSalvando(true);
       setFormErro('');
 
+      let urlFinal = comprovante.trim();
+
+      // Se um arquivo binário foi selecionado, faz upload via multipart real
+      if (arquivoLocal) {
+        const formData = new FormData();
+        formData.append('arquivo', arquivoLocal);
+
+        const uploadRes = await api.post('/api/financeiro/upload-comprovante', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        urlFinal = uploadRes.data.url;
+      }
+
       const response = await api.patch(`/api/financeiro/anuidades/${beneficiario.id}/pagar`, {
-        comprovante: comprovante.trim(),
+        comprovante: urlFinal,
         valor: Number(valor),
         tipoBeneficiario: beneficiario.tipo,
         observacoes: observacoes ? observacoes.trim() : null
@@ -121,34 +139,56 @@ export default function ModalBaixaAnuidade({ beneficiario, onClose, onSuccess, o
           {/* Comprovante */}
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Link ou Caminho do Comprovante de Pagamento: <span className="text-red-500">*</span>
+              Comprovante de Pagamento: <span className="text-red-500">*</span>
             </label>
-            <div className="relative mb-2">
-              <LinkIcon className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input
-                type="text"
-                required
-                placeholder="Ex: https://drive.google.com/file/... ou código PIX / recibo"
-                value={comprovante}
-                onChange={(e) => setComprovante(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-fmt-blue"
-              />
-            </div>
+
+            {arquivoLocal ? (
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50/70 border border-blue-200 mb-2">
+                <div className="flex items-center gap-2 truncate">
+                  <FileText className="w-4 h-4 text-fmt-blue shrink-0" />
+                  <div className="truncate">
+                    <span className="text-xs font-bold text-slate-800 block truncate">{arquivoLocal.name}</span>
+                    <span className="text-[10px] text-slate-500">{(arquivoLocal.size / 1024).toFixed(1)} KB • Arquivo pronto para upload</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoverArquivo}
+                  className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                  title="Remover arquivo"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative mb-2">
+                <LinkIcon className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Ex: https://drive.google.com/file/... ou código PIX / recibo"
+                  value={comprovante}
+                  onChange={(e) => setComprovante(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-fmt-blue"
+                />
+              </div>
+            )}
 
             {/* Alternativa de selecionar arquivo local */}
-            <div className="flex items-center gap-2">
-              <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-slate-300 hover:border-fmt-blue bg-white text-slate-600 hover:text-fmt-blue text-xs font-medium cursor-pointer transition-colors">
-                <Upload className="w-3.5 h-3.5" />
-                <span>Anexar Arquivo Local</span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-              <span className="text-[11px] text-slate-400">PDF, PNG ou JPEG</span>
-            </div>
+            {!arquivoLocal && (
+              <div className="flex items-center gap-2">
+                <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-slate-300 hover:border-fmt-blue bg-white text-slate-600 hover:text-fmt-blue text-xs font-medium cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Anexar Arquivo Local</span>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-[11px] text-slate-400">PDF, PNG ou JPEG</span>
+              </div>
+            )}
           </div>
 
           {/* Observações */}

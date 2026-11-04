@@ -13,9 +13,12 @@ import com.fmttema.api.repositories.AcademiaRepository;
 import com.fmttema.api.repositories.AtletaRepository;
 import com.fmttema.api.repositories.FluxoCaixaRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +30,18 @@ public class FinanceiroService {
     private final AtletaRepository atletaRepository;
     private final AcademiaRepository academiaRepository;
     private final FluxoCaixaRepository fluxoCaixaRepository;
+    private final FileUploadService fileUploadService;
 
     public FinanceiroService(
             AtletaRepository atletaRepository,
             AcademiaRepository academiaRepository,
-            FluxoCaixaRepository fluxoCaixaRepository
+            FluxoCaixaRepository fluxoCaixaRepository,
+            FileUploadService fileUploadService
     ) {
         this.atletaRepository = atletaRepository;
         this.academiaRepository = academiaRepository;
         this.fluxoCaixaRepository = fluxoCaixaRepository;
+        this.fileUploadService = fileUploadService;
     }
 
     /**
@@ -237,5 +243,76 @@ public class FinanceiroService {
                 .stream()
                 .map(FluxoCaixaResponseDTO::fromEntity)
                 .toList();
+    }
+
+    /**
+     * Salva o comprovante de pagamento no disco e retorna a URL pública acessível.
+     */
+    public String salvarComprovante(MultipartFile file) throws IOException {
+        return fileUploadService.salvarComprovante(file);
+    }
+
+    /**
+     * Anexa o comprovante de pagamento à anuidade do atleta ou agremiação (CARD-08).
+     * Aplica verificação estrita de autorização (IDOR protection): não-admins só podem enviar para o próprio registro.
+     */
+    @Transactional
+    public String anexarComprovante(Long id, String tipo, MultipartFile file, String userEmail, boolean isAdmin) throws IOException {
+        String urlComprovante = fileUploadService.salvarComprovante(file);
+
+        if ("ACADEMIA".equalsIgnoreCase(tipo)) {
+            Academia academia = academiaRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Academia não encontrada para o ID: " + id));
+
+            if (!isAdmin) {
+                if (academia.getUsuario() == null || !academia.getUsuario().getEmail().equalsIgnoreCase(userEmail)) {
+                    throw new AccessDeniedException("Você só pode anexar comprovante para a sua própria agremiação.");
+                }
+            }
+
+            academia.setComprovantePagamento(urlComprovante);
+            academiaRepository.save(academia);
+            return urlComprovante;
+        }
+
+        if ("ATLETA".equalsIgnoreCase(tipo)) {
+            Atleta atleta = atletaRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Atleta não encontrado para o ID: " + id));
+
+            if (!isAdmin) {
+                if (atleta.getUsuario() == null || !atleta.getUsuario().getEmail().equalsIgnoreCase(userEmail)) {
+                    throw new AccessDeniedException("Você só pode anexar comprovante para o seu próprio perfil de atleta.");
+                }
+            }
+
+            atleta.setComprovantePagamento(urlComprovante);
+            atletaRepository.save(atleta);
+            return urlComprovante;
+        }
+
+        // Se tipo não foi especificado, tenta Atleta e depois Academia
+        Optional<Atleta> atletaOpt = atletaRepository.findById(id);
+        if (atletaOpt.isPresent()) {
+            Atleta atleta = atletaOpt.get();
+            if (!isAdmin && (atleta.getUsuario() == null || !atleta.getUsuario().getEmail().equalsIgnoreCase(userEmail))) {
+                throw new AccessDeniedException("Você só pode anexar comprovante para o seu próprio perfil de atleta.");
+            }
+            atleta.setComprovantePagamento(urlComprovante);
+            atletaRepository.save(atleta);
+            return urlComprovante;
+        }
+
+        Optional<Academia> academiaOpt = academiaRepository.findById(id);
+        if (academiaOpt.isPresent()) {
+            Academia academia = academiaOpt.get();
+            if (!isAdmin && (academia.getUsuario() == null || !academia.getUsuario().getEmail().equalsIgnoreCase(userEmail))) {
+                throw new AccessDeniedException("Você só pode anexar comprovante para a sua própria agremiação.");
+            }
+            academia.setComprovantePagamento(urlComprovante);
+            academiaRepository.save(academia);
+            return urlComprovante;
+        }
+
+        throw new EntityNotFoundException("Nenhum atleta ou agremiação encontrado com o ID: " + id);
     }
 }

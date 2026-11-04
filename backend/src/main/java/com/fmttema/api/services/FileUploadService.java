@@ -16,7 +16,9 @@ import java.util.UUID;
 public class FileUploadService {
 
     private static final String UPLOAD_DIR = "uploads/patrocinadores";
+    private static final String COMPROVANTES_DIR = "uploads/comprovantes";
     private static final List<String> EXTENSOES_PERMITIDAS = Arrays.asList(".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif");
+    private static final List<String> EXTENSOES_COMPROVANTE = Arrays.asList(".pdf", ".png", ".jpg", ".jpeg", ".webp");
 
     public String salvarLogomarca(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -50,6 +52,40 @@ public class FileUploadService {
         Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 
         return "/uploads/patrocinadores/" + nomeFinal;
+    }
+
+    public String salvarComprovante(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Arquivo de comprovante vazio ou não fornecido");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new IllegalArgumentException("Nome de arquivo inválido");
+        }
+
+        String extensao = "";
+        int i = originalFilename.lastIndexOf('.');
+        if (i > 0) {
+            extensao = originalFilename.substring(i).toLowerCase();
+        }
+
+        if (!EXTENSOES_COMPROVANTE.contains(extensao)) {
+            throw new IllegalArgumentException("Formato de comprovante não suportado. Formatos aceitos: PDF, PNG, JPG, JPEG, WEBP.");
+        }
+
+        Path uploadPath = Paths.get(COMPROVANTES_DIR);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        String nomeSanitizado = originalFilename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String nomeFinal = UUID.randomUUID() + "_" + nomeSanitizado;
+        Path destino = uploadPath.resolve(nomeFinal);
+
+        Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
+
+        return "/uploads/comprovantes/" + nomeFinal;
     }
 
     public void excluirArquivoSeExistir(String fileUrl) {

@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/api/patrocinadores/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/financeiro/anuidades/me").hasAnyRole("ADMIN", "ACADEMIA", "ATLETA")
+                        .requestMatchers(HttpMethod.POST, "/api/financeiro/upload-comprovante").hasAnyRole("ADMIN", "ACADEMIA", "ATLETA")
+                        .requestMatchers(HttpMethod.POST, "/api/financeiro/anuidades/*/comprovante").hasAnyRole("ADMIN", "ACADEMIA", "ATLETA")
                         .requestMatchers("/api/financeiro/**").hasRole("ADMIN")
                         .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
