@@ -24,3 +24,6 @@ backend/src/main/resources/application-*.yml
 
 # Ferramentas e agentes de IA
 .agents/
+
+# Documentos exportados localmente
+*.pdf
